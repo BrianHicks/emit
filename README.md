@@ -12,12 +12,12 @@ router = Router()
 # tasks.py (or other like file)
 from .router import router
 
-@node(['n'])
+@router.node(['n'])
 def yield_n(n):
     for i in range(n):
         yield i
 
-@node(['square'], ['yield_n'])
+@router.node(['square'], ['yield_n'])
 def square(msg):
     result = msg.n ** 2
     redis.sadd('squares', result)
