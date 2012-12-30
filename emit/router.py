@@ -1,14 +1,17 @@
 'router for emit'
+from collections import namedtuple
 from functools import wraps
 
 class Router(object):
     def __init__(self, initial_routes=None):
         self.routes = initial_routes or {}
+        self.fields = {}
 
-    def node(self, field_names, subscribes_to=None):
+    def node(self, fields, subscribes_to=None):
         'decorator for nodes connecting the emit graph'
         def outer(func):
             'outer level function'
+            self.fields[func.func_name] = namedtuple(func.func_name + '_fields', fields)
 
             if subscribes_to:
                 self.add_routes(subscribes_to, func.func_name)

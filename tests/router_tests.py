@@ -1,4 +1,5 @@
 'tests for emit/router.py'
+from collections import namedtuple
 from unittest import TestCase
 
 from emit.router import Router
@@ -19,6 +20,24 @@ class RouterTests(TestCase):
         r.node(fields, 'a')(b)
 
         self.assertEqual({'a': set('b')}, r.routes)
+
+    def test_node_adds_fields(self):
+        'router adds fields when decorating'
+        r = Router()
+        a = lambda x: x
+        a.func_name = 'a'
+
+        r.node(['a', 'b', 'c'])(a)
+
+        should = namedtuple('a_fields', ['a', 'b', 'c'])
+        self.assertEqual(
+            should._fields,
+            r.fields['a']._fields
+        )
+        self.assertEqual(
+            should.__name__,
+            r.fields['a'].__name__
+        )
 
     # add_routes
     def test_creates_new_route(self):
