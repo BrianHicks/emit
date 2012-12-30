@@ -93,3 +93,33 @@ class RouterTests(TestCase):
             ),
             suffixes('stuff', ['y', 'ier', 'iest'])
         )
+
+    def test_routing(self):
+        'calling a function will route to subscribed functions'
+        r = Router()
+        n = 5
+
+        squares = [i*i for i in range(n)]
+        returned_squares = []
+
+        doubles = [i*2 for i in range(n)]
+        returned_doubles = []
+
+        @r.node(['i'])
+        def yield_n(to):
+            for i in range(to):
+                yield i
+
+        @r.node(['squared'], ['yield_n'])
+        def square(msg):
+            returned_squares.append(msg.i * msg.i)
+            return msg.i * msg.i
+
+        @r.node(['doubled'], ['yield_n'])
+        def double(msg):
+            returned_doubles.append(msg.i * 2)
+            return msg.i * 2
+
+        yield_n(n)
+        self.assertEqual(doubles, returned_doubles)
+        self.assertEqual(squares, returned_squares)
