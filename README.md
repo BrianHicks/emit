@@ -1,5 +1,7 @@
 # Emit
 
+[![Build Status](https://travis-ci.org/BrianHicks/emit.png?branch=master)](https://travis-ci.org/BrianHicks/emit)
+
 Emit gives you subscriptions to function results. Data pipelines and other fun
 things abound. Observe:
 
