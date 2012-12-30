@@ -61,3 +61,18 @@ class RouterTests(TestCase):
         r.add_routes('a', 'bc')
 
         self.assertEqual(set(['bc']), r.routes['a'])
+
+    # calling
+    def test_calling_returns_single(self):
+        'calling a function that returns explicitly wraps the value'
+        r = Router()
+
+        @r.node(['sum', 'x', 'y'])
+        def add(x, y):
+            return x + y, x, y
+
+        self.assertEqual(
+            r.fields['add'](3, 1, 2),
+            add(1, 2)
+        )
+

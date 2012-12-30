@@ -19,7 +19,12 @@ class Router(object):
             @wraps(func)
             def inner(*args, **kwargs):
                 'innermost function'
-                return func(*args, **kwargs)
+                result = func(*args, **kwargs)
+
+                if not isinstance(result, tuple):
+                    result = tuple([result])
+
+                return self.fields[func.func_name](*result)
 
             return inner
 
