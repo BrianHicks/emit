@@ -76,3 +76,20 @@ class RouterTests(TestCase):
             add(1, 2)
         )
 
+    def test_calling_returns_multiple(self):
+        'calling a function that yields returns multiple results'
+        r = Router()
+
+        @r.node(['combination'])
+        def suffixes(pre, sufs):
+            for suf in sufs:
+                yield pre + suf
+
+        self.assertEqual(
+            (
+                r.fields['suffixes']('stuffy'),
+                r.fields['suffixes']('stuffier'),
+                r.fields['suffixes']('stuffiest'),
+            ),
+            suffixes('stuff', ['y', 'ier', 'iest'])
+        )
