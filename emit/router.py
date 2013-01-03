@@ -4,10 +4,11 @@ from functools import wraps
 from types import GeneratorType
 
 class Router(object):
-    def __init__(self, initial_routes=None):
+    def __init__(self, initial_routes=None, celery_task=None):
         self.routes = initial_routes or {}
         self.fields = {}
         self.functions = {}
+        self.celery_task = celery_task
 
     def node(self, fields, subscribe_to=None, celery_task=None):
         'decorator for nodes connecting the emit graph'
@@ -46,8 +47,11 @@ class Router(object):
             # celery registers tasks by decorating them, and so do we, so the
             # user can pass a celery task and we'll wrap our code with theirs
             # in a nice package celery can execute.
-            if celery_task is not None:
-                inner = celery_task(inner)
+            if celery_task or self.celery_task:
+                if celery_task:
+                    inner = celery_task(inner)
+                else:
+                    inner = self.celery_task(inner)
 
             # register the task in the graph
             name = self.get_name(inner)

@@ -156,3 +156,15 @@ class CeleryRouterTests(TestCase):
         self.assertTrue(
             isinstance(self.router.functions['tests.router_tests.test'], Task)
         )
+
+    def test_adds_when_initialized(self):
+        'if router is passed a celery task when initialized it wraps with it'
+        r = Router(celery_task=self.celery.task)
+
+        l = lambda x: x
+        l.func_name = 'test'
+        r.node(['test'])(l)
+
+        self.assertTrue(
+            isinstance(r.functions['tests.router_tests.test'], Task)
+        )
