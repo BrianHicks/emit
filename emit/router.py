@@ -3,8 +3,6 @@ from collections import namedtuple
 from functools import wraps
 from types import GeneratorType
 
-from .errors import RegistrationError
-
 class Router(object):
     def __init__(self, initial_routes=None):
         self.routes = initial_routes or {}
