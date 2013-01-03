@@ -13,11 +13,12 @@ class Router(object):
         'decorator for nodes connecting the emit graph'
         def outer(func):
             'outer level function'
-            self.fields[func.func_name] = namedtuple(func.func_name + '_fields', fields)
-            self.functions[func.func_name] = func
+            name = self.get_name(func)
+            self.fields[name] = namedtuple(name + '_fields', fields)
+            self.functions[name] = func
 
             if subscribes_to:
-                self.add_routes(subscribes_to, func.func_name)
+                self.add_routes(subscribes_to, name)
 
             @wraps(func)
             def inner(*args, **kwargs):
@@ -27,14 +28,14 @@ class Router(object):
                 if isinstance(result, GeneratorType):
                     results = []
                     for item in result:
-                        results.append(self.wrap_result(func.func_name, item))
+                        results.append(self.wrap_result(name, item))
 
-                    [self.route(func.func_name, item) for item in results]
+                    [self.route(name, item) for item in results]
                     return tuple(results)
 
                 else:
-                    result = self.wrap_result(func.func_name, result)
-                    self.route(func.func_name, result)
+                    result = self.wrap_result(name, result)
+                    self.route(name, result)
                     return result
 
             return inner
@@ -63,3 +64,7 @@ class Router(object):
             result = tuple([result])
 
         return self.fields[name](*result)
+
+    def get_name(self, func):
+        'get the name of a function'
+        return func.func_name

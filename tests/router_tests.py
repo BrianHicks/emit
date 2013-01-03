@@ -123,3 +123,11 @@ class RouterTests(TestCase):
         yield_n(n)
         self.assertEqual(doubles, returned_doubles)
         self.assertEqual(squares, returned_squares)
+
+    def test_get_name(self):
+        'get name gets the func_name property by default'
+        r = Router()
+        l = lambda x: x
+        l.func_name = 'test'
+
+        self.assertEqual('test', r.get_name(l))
