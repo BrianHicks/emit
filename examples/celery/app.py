@@ -9,4 +9,5 @@ app = Celery(
 app.conf.update(
     CELERY_IMPORTS = ('tasks',)
 )
-router = Router()
+
+router = Router(celery_task=app.task)
