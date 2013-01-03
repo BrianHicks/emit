@@ -69,20 +69,20 @@ class RouterTests(TestCase):
         'calling a function that returns explicitly wraps the value'
 
         @self.router.node(['sum', 'x', 'y'])
-        def add(x, y):
-            return x + y, x, y
+        def add(msg):
+            return msg['x'] + msg['y'], msg['x'], msg['y']
 
         self.assertEqual(
             {'sum': 3, 'x': 1, 'y': 2},
-            add(1, 2)
+            add(x=1, y=2)
         )
 
     def test_calling_returns_multiple(self):
         'calling a function that yields returns multiple results'
         @self.router.node(['combination'])
-        def suffixes(pre, sufs):
-            for suf in sufs:
-                yield pre + suf
+        def suffixes(msg):
+            for suf in msg['sufs']:
+                yield msg['pre'] + suf
 
         self.assertEqual(
             (
@@ -90,7 +90,7 @@ class RouterTests(TestCase):
                 {'combination': 'stuffier'},
                 {'combination': 'stuffiest'}
             ),
-            suffixes('stuff', ['y', 'ier', 'iest'])
+            suffixes(pre='stuff', sufs=['y', 'ier', 'iest'])
         )
 
     def test_routing(self):
@@ -104,8 +104,8 @@ class RouterTests(TestCase):
         returned_doubles = []
 
         @self.router.node(['i'])
-        def yield_n(to):
-            for i in range(to):
+        def yield_n(msg):
+            for i in range(msg['to']):
                 yield i
 
         @self.router.node(['squared'], ['yield_n'])
@@ -118,7 +118,7 @@ class RouterTests(TestCase):
             returned_doubles.append(msg['i'] * 2)
             return msg['i'] * 2
 
-        yield_n(n)
+        yield_n(to=n)
         self.assertEqual(doubles, returned_doubles)
         self.assertEqual(squares, returned_squares)
 
@@ -166,3 +166,19 @@ class CeleryRouterTests(TestCase):
         self.assertTrue(
             isinstance(r.functions['tests.router_tests.test'], Task)
         )
+
+    #def test_routes(self):
+        #'routes correctly'
+        #@self.router.node(['n'], celery_task=self.celery.task)
+        #def emit_n(n):
+            #for i in range(n):
+                #yield i
+
+        #squares = []
+
+        #@self.router.node(['square'], 'tests.router_tests.emit_n', celery_task=self.celery.task)
+        #def square(msg):
+            #squares.append(msg['i'] ** 2)
+
+        #emit_n.delay(5)
+        #self.assertEqual([0, 1, 4, 9, 16], squares)

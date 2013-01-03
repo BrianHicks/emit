@@ -17,8 +17,7 @@ class Router(object):
             @wraps(func)
             def inner(*args, **kwargs):
                 'innermost function'
-                # TODO: handle the case of calling a function directly
-                result = func(*args, **kwargs)
+                result = func(self.get_message_from_call(*args, **kwargs))
 
                 # functions can return multiple values ("emit" multiple times)
                 # by yielding instead of returning. Handle this case by making
@@ -59,6 +58,20 @@ class Router(object):
             return inner
 
         return outer
+
+    def get_message_from_call(self, *args, **kwargs):
+        'get message object from a call'
+        if len(args) == 1 and isinstance(args[0], dict):
+            # then it's a message
+            result = args[0]
+        elif len(args) == 0 and kwargs != {}:
+            # then it's a set of kwargs
+            result = kwargs
+        else:
+            # it's neither, and we don't handle that
+            raise TypeError('Pass either keyword arguments or a dictionary argument')
+
+        return result
 
     def register(self, name, func, fields, subscribe_to):
         'register a name in the graph'
