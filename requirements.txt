@@ -1,1 +1,5 @@
 nose==1.2.1
+
+# testing celery example
+celery==3.0.12
+redis==2.7.2
