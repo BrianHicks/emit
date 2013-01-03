@@ -2,6 +2,8 @@
 from collections import namedtuple
 from unittest import TestCase
 
+from celery import Celery, Task
+
 from emit.router import Router
 
 class RouterTests(TestCase):
@@ -29,14 +31,10 @@ class RouterTests(TestCase):
 
         r.node(['a', 'b', 'c'])(a)
 
-        should = namedtuple('a_fields', ['a', 'b', 'c'])
+        should = namedtuple('message', ['a', 'b', 'c'])
         self.assertEqual(
             should._fields,
             r.fields['a']._fields
-        )
-        self.assertEqual(
-            should.__name__,
-            r.fields['a'].__name__
         )
 
     # add_routes

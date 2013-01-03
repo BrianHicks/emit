@@ -9,34 +9,54 @@ class Router(object):
         self.fields = {}
         self.functions = {}
 
-    def node(self, fields, subscribes_to=None):
+    def node(self, fields, subscribe_to=None, celery_task=None):
         'decorator for nodes connecting the emit graph'
         def outer(func):
             'outer level function'
-            name = self.get_name(func)
-            self.fields[name] = namedtuple(name + '_fields', fields)
-            self.functions[name] = func
-
-            if subscribes_to:
-                self.add_routes(subscribes_to, name)
-
+            # create a wrapper function
             @wraps(func)
             def inner(*args, **kwargs):
                 'innermost function'
+                # TODO: handle the case of calling a function directly
                 result = func(*args, **kwargs)
 
+                # functions can return multiple values ("emit" multiple times)
+                # by yielding instead of returning. Handle this case by making
+                # a list of the results and processing them all after the
+                # generator successfully exits. If we were to process them as
+                # they came out of the generator, we might get a partially
+                # processed input sent down the graph. This may be possible in
+                # the future via a flag.
                 if isinstance(result, GeneratorType):
-                    results = []
-                    for item in result:
-                        results.append(self.wrap_result(name, item))
+                    results = [
+                        self.wrap_result(name, item)
+                        for item in result
+                    ]
 
                     [self.route(name, item) for item in results]
                     return tuple(results)
 
+                # the case of a direct return is simpler. wrap, route, and
+                # return the value.
                 else:
                     result = self.wrap_result(name, result)
                     self.route(name, result)
                     return result
+
+            # celery registers tasks by decorating them, and so do we, so the
+            # user can pass a celery task and we'll wrap our code with theirs
+            # in a nice package celery can execute.
+            if celery_task is not None:
+                inner = celery_task(inner)
+
+            # register the task in the graph
+            name = self.get_name(inner)
+
+            self.fields[name] = namedtuple('message', fields)
+            self.functions[name] = func
+
+            if subscribe_to:
+                self.add_routes(subscribe_to, name)
 
             return inner
 
@@ -44,6 +64,9 @@ class Router(object):
 
     def add_routes(self, origins, destination):
         'add routes to the routing dictionary'
+        if not isinstance(origins, list):
+            origins = [origins]
+
         for origin in list(origins):
             self.routes.setdefault(origin, set())
             self.routes[origin].add(destination)
@@ -67,4 +90,7 @@ class Router(object):
 
     def get_name(self, func):
         'get the name of a function'
+        if hasattr(func, 'name'):  # celery-decorated function
+            return func.name
+
         return func.func_name
