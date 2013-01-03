@@ -51,16 +51,19 @@ class Router(object):
 
             # register the task in the graph
             name = self.get_name(inner)
-
-            self.fields[name] = namedtuple('message', fields)
-            self.functions[name] = func
-
-            if subscribe_to:
-                self.add_routes(subscribe_to, name)
+            self.register(name, inner, fields, subscribe_to)
 
             return inner
 
         return outer
+
+    def register(self, name, func, fields, subscribe_to):
+        'register a name in the graph'
+        self.fields[name] = namedtuple('message', fields)
+        self.functions[name] = func
+
+        if subscribe_to:
+            self.add_routes(subscribe_to, name)
 
     def add_routes(self, origins, destination):
         'add routes to the routing dictionary'
