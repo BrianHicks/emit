@@ -8,6 +8,6 @@ def emit_words(instring):
     for word in instring.split(' '):
         yield word
 
-@router.node(['count'], subscribe_to='tasks.emit_words')
+@router.node(['word', 'count'], subscribe_to='tasks.emit_words')
 def tally_word(msg):
-    return redis.zincrby('celery_emit_example', msg.word, 1)
+    return msg['word'], redis.zincrby('celery_emit_example', msg['word'], 1)

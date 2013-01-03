@@ -1,5 +1,4 @@
 'tests for emit/router.py'
-from collections import namedtuple
 from unittest import TestCase
 
 from celery import Celery, Task
@@ -39,10 +38,9 @@ class RouterTests(TestCase):
 
         self.router.node(['a', 'b', 'c'])(a)
 
-        should = namedtuple('message', ['a', 'b', 'c'])
         self.assertEqual(
-            should._fields,
-            self.router.fields['a']._fields
+            ['a', 'b', 'c'],
+            self.router.fields['a']
         )
 
     # add_routes
@@ -75,7 +73,7 @@ class RouterTests(TestCase):
             return x + y, x, y
 
         self.assertEqual(
-            self.router.fields['add'](3, 1, 2),
+            {'sum': 3, 'x': 1, 'y': 2},
             add(1, 2)
         )
 
@@ -88,9 +86,9 @@ class RouterTests(TestCase):
 
         self.assertEqual(
             (
-                self.router.fields['suffixes']('stuffy'),
-                self.router.fields['suffixes']('stuffier'),
-                self.router.fields['suffixes']('stuffiest'),
+                {'combination': 'stuffy'},
+                {'combination': 'stuffier'},
+                {'combination': 'stuffiest'}
             ),
             suffixes('stuff', ['y', 'ier', 'iest'])
         )
@@ -112,13 +110,13 @@ class RouterTests(TestCase):
 
         @self.router.node(['squared'], ['yield_n'])
         def square(msg):
-            returned_squares.append(msg.i * msg.i)
-            return msg.i * msg.i
+            returned_squares.append(msg['i'] * msg['i'])
+            return msg['i'] * msg['i']
 
         @self.router.node(['doubled'], ['yield_n'])
         def double(msg):
-            returned_doubles.append(msg.i * 2)
-            return msg.i * 2
+            returned_doubles.append(msg['i'] * 2)
+            return msg['i'] * 2
 
         yield_n(n)
         self.assertEqual(doubles, returned_doubles)

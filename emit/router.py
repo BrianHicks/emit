@@ -1,5 +1,4 @@
 'router for emit'
-from collections import namedtuple
 from functools import wraps
 from types import GeneratorType
 
@@ -63,7 +62,7 @@ class Router(object):
 
     def register(self, name, func, fields, subscribe_to):
         'register a name in the graph'
-        self.fields[name] = namedtuple('message', fields)
+        self.fields[name] = fields
         self.functions[name] = func
 
         if subscribe_to:
@@ -86,14 +85,22 @@ class Router(object):
             return
 
         for sub in subs:
-            self.functions[sub](message)
+            self.dispatch(sub, message)
+
+    def dispatch(self, subscriber, message):
+        func = self.functions[subscriber]
+
+        if hasattr(func, 'delay'):
+            return func.delay(message)
+        else:
+            return func(message)
 
     def wrap_result(self, name, result):
-        'wrap a result in the namedtuple'
+        'zip a result with the fields the function provided'
         if not isinstance(result, tuple):
             result = tuple([result])
 
-        return self.fields[name](*result)
+        return dict(zip(self.fields[name], result))
 
     def get_name(self, func):
         'get the name of a function'
