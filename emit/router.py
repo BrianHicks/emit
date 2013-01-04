@@ -5,7 +5,22 @@ from types import GeneratorType
 from .message import Message
 
 class Router(object):
+    'A router object. Holds routes and references to functions for dispatch'
     def __init__(self, initial_routes=None, celery_task=None, message_class=None):
+        '''\
+        Create a new router object. All parameters are optional.
+
+        :param initial_routes: custom routes to initiate router with
+        :type initial_routes: dict
+        :param celery_task: celery task to apply to all nodes (can be
+                            overridden in :py:meth:`Router.node`.)
+        :type celery_task: A celery task decorator, in any form
+        :param message_class: wrapper class for messages passed to nodes
+        :type message_class: :py:class:`emit.message.Message` or subclass
+
+        :exceptions: None
+        :returns: None
+        '''
         self.routes = initial_routes or {}
         self.fields = {}
         self.functions = {}
@@ -13,7 +28,14 @@ class Router(object):
         self.message_class = message_class or Message
 
     def __call__(self, **kwargs):
-        'call the entry points'
+        '''\
+        Route a message to all nodes marked as entry points.
+
+        .. note::
+           This function does not optionally accept a single argument
+           (dictionary) as other points in this API do - it must be expanded to
+           keyword arguments in this case.
+        '''
         self.route('__entry_point', kwargs)
 
     def node(self, fields, subscribe_to=None, celery_task=None, entry_point=False):

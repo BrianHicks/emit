@@ -4,10 +4,18 @@ API Documentation
 Router
 ------
 
-.. autoclass:: emit.router.Router
+.. module:: emit.router
+
+.. autoclass:: Router
    :members:
+
+   .. automethod:: Router.__init__
+
+   .. automethod:: Router.__call__
 
 Message
 -------
 
-.. autoclass:: emit.message.Message
+.. module:: emit.message
+
+.. autoclass:: Message
