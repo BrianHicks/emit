@@ -12,7 +12,11 @@ class Router(object):
         self.celery_task = celery_task
         self.message_class = message_class or Message
 
-    def node(self, fields, subscribe_to=None, celery_task=None):
+    def __call__(self, **kwargs):
+        'call the entry points'
+        self.route('__entry_point', kwargs)
+
+    def node(self, fields, subscribe_to=None, celery_task=None, entry_point=False):
         'decorator for nodes connecting the emit graph'
         def outer(func):
             'outer level function'
@@ -56,7 +60,7 @@ class Router(object):
 
             # register the task in the graph
             name = self.get_name(inner)
-            self.register(name, inner, fields, subscribe_to)
+            self.register(name, inner, fields, subscribe_to, entry_point)
 
             return inner
 
@@ -76,13 +80,16 @@ class Router(object):
 
         return self.message_class(result)
 
-    def register(self, name, func, fields, subscribe_to):
+    def register(self, name, func, fields, subscribe_to, entry_point):
         'register a name in the graph'
         self.fields[name] = fields
         self.functions[name] = func
 
         if subscribe_to:
             self.add_routes(subscribe_to, name)
+
+        if entry_point:
+            self.add_routes('__entry_point', name)
 
     def add_routes(self, origins, destination):
         'add routes to the routing dictionary'

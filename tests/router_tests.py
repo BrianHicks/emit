@@ -152,6 +152,17 @@ class RouterTests(TestCase):
 
         test(x=1)
 
+    def test_initial(self):
+        'registering a function with initial calls it from calling the router'
+        @self.router.node(['x'], entry_point=True)
+        def test(msg):
+            raise RuntimeError('test was called')
+
+        self.assertRaisesRegexp(
+            RuntimeError, 'test was called',
+            self.router, x=1
+        )
+
 class CeleryRouterTests(TestCase):
     'tests for using celery to route nodes'
     def setUp(self):
