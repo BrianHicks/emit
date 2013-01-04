@@ -50,7 +50,7 @@ class Router(object):
            uses will raise a ``TypeError``.
 
         :param fields: fields that this function returns
-        :type fields: ordered iterable
+        :type fields: ordered iterable of :py:class:`str`
         :param subscribe_to: functions in the graph to subscribe to
         :type subscribe_to: :py:class:`str` or iterable of :py:class:`str`
         :param celery_task: celery task to apply to only this node. Use this to
@@ -111,7 +111,17 @@ class Router(object):
         return outer
 
     def get_message_from_call(self, *args, **kwargs):
-        'get message object from a call'
+        '''\
+        Get message object from a call.
+
+        :raises: :py:exc:`TypeError` (if the format is not what we expect)
+
+        This is where arguments to nodes are turned into Messages. Arguments
+        are parsed in the following order:
+
+         - A single positional argument (a :py:class:`dict`)
+         - No positional arguments and a number of keyword arguments
+        '''
         if len(args) == 1 and isinstance(args[0], dict):
             # then it's a message
             result = args[0]
@@ -125,7 +135,17 @@ class Router(object):
         return self.message_class(result)
 
     def register(self, name, func, fields, subscribe_to, entry_point):
-        'register a name in the graph'
+        '''
+        Register a named function in the graph
+
+        :param name: name to register
+        :type name: :py:class:`str`
+        :param func: function to remember and call
+        :type func: callable
+
+        ``fields``, ``subscribe_to`` and ``entry_point`` are the same as in
+        :py:meth:`Router.node`.
+        '''
         self.fields[name] = fields
         self.functions[name] = func
 
@@ -136,7 +156,20 @@ class Router(object):
             self.add_routes('__entry_point', name)
 
     def add_routes(self, origins, destination):
-        'add routes to the routing dictionary'
+        '''
+        Add routes to the routing dictionary
+
+        :param origins: a number of origins to register
+        :type origins: :py:class:`str` or iterable of :py:class:`str`
+        :param destination: where the origins should point to
+        :type destination: :py:class:`str`
+
+        Routing dictionary takes the following form::
+
+            {'node_a': set(['node_b', 'node_c']),
+             'node_b': set(['node_d'])}
+
+        '''
         if not isinstance(origins, list):
             origins = [origins]
 
@@ -145,16 +178,34 @@ class Router(object):
             self.routes[origin].add(destination)
 
     def route(self, origin, message):
-        'route messages to multiple subscribers'
+        '''\
+        Using the routing dictionary, dispatch a message to all subscribers
+
+        :param origin: name of the origin node
+        :type origin: :py:class:`str`
+        :param message: message to dispatch
+        :type message: :py:class:`emit.message.Message` or subclass
+        '''
         try:
             subs = self.routes[origin]
         except KeyError:
             return
 
         for sub in subs:
-            self.dispatch(sub, message)
+            return self.dispatch(sub, message)
 
     def dispatch(self, subscriber, message):
+        '''\
+        dispatch a message to a named function
+
+        :param subscriber: subscriber to dispatch to
+        :type subscriber: :py:class:`str`
+        :param message: message to dispatch
+        :type message: :py:class:`emit.message.Message` or subclass
+
+        Will delay the message (using celery) instead of calling it directly if
+        possible.
+        '''
         func = self.functions[subscriber]
 
         if hasattr(func, 'delay'):
@@ -163,14 +214,31 @@ class Router(object):
             return func(message)
 
     def wrap_result(self, name, result):
-        'zip a result with the fields the function provided'
+        '''
+        Wrap a result from a function with it's stated fields
+
+        :param name: fields to look up
+        :type name: :py:class:`str`
+        :param result: return value from function. Will be converted to tuple.
+        :type result: anything
+
+        :returns: :py:class:`dict`
+        '''
         if not isinstance(result, tuple):
             result = tuple([result])
 
         return dict(zip(self.fields[name], result))
 
     def get_name(self, func):
-        'get the name of a function'
+        '''
+        Get the name to reference a function by
+
+        :param func: function to get the name of
+        :type func: callable
+
+        Gets celery assigned name, if present (IE ``name`` instead of
+        ``func_name``)
+        '''
         if hasattr(func, 'name'):  # celery-decorated function
             return func.name
 
