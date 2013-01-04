@@ -1,5 +1,6 @@
 'message wrapper to be passed to functions'
 class Message(object):
+    'Convenient wrapper around a dictionary to provide attribute access'
     def __init__(self, *args, **kwargs):
         self.bundle = dict(*args, **kwargs)
 
