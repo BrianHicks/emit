@@ -17,6 +17,7 @@ Contents:
 
    getting-started
    celery
+   multilang
    api-documentation
 
 
