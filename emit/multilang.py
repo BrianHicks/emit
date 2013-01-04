@@ -42,6 +42,7 @@ class MultiLangNode(object):
             raise RuntimeError(stderr)
 
         messages = stdout.strip().split('\n')
+        self.logger.debug('subprocess returned %d messages', len(messages))
         for message in messages:
             yield self.deserialize(message)
 
@@ -50,9 +51,11 @@ class MultiLangNode(object):
         return shlex.split(self.command)
 
     def get_cwd(self):
+        'get directory to change to before running the command'
         try:
             return self.cwd
         except AttributeError:
+            self.logger.debug('no cwd specified, returning None')
             return None
 
     def deserialize(self, msg):
