@@ -1,13 +1,12 @@
 from redis import Redis
-from app import router
-
-redis = Redis()
+from app import app, router
 
 @router.node(['word'])
-def emit_words(instring):
-    for word in instring.split(' '):
+def emit_words(msg):
+    for word in msg.document.strip().split(' '):
         yield word
 
-@router.node(['word', 'count'], subscribe_to='tasks.emit_words')
+@router.node(['word', 'count'], subscribe_to='tasks.emit_words', celery_task=app.task(rate_limit='5/s'))
 def tally_word(msg):
-    return msg['word'], redis.zincrby('celery_emit_example', msg['word'], 1)
+    redis = Redis()
+    return msg.word, redis.zincrby('celery_emit_example', msg.word, 1)
