@@ -61,3 +61,13 @@ Message
 
 .. autoclass:: Message
    :members:
+
+Multilang
+---------
+
+.. module:: emit.multilang
+
+.. autoclass:: MultiLangNode
+   :members:
+
+   .. automethod:: MultiLangNode.__call__
