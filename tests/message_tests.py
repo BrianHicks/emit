@@ -1,6 +1,8 @@
 'tests for message'
 from unittest import TestCase
 
+import msgpack
+
 from emit.message import Message
 
 
@@ -23,4 +25,14 @@ class MessageTests(TestCase):
         self.assertEqual(
             {'x': 1, 'y': 2},
             x.as_dict()
+        )
+
+    def test_as_msgpack(self):
+        'returns string from .as_msgpack'
+        d = {'x': 1, 'y': 2}
+        x = Message(**d)
+
+        self.assertEqual(
+            msgpack.packb(d),
+            x.as_msgpack()
         )

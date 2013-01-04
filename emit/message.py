@@ -1,4 +1,6 @@
 'message wrapper to be passed to functions'
+import msgpack
+
 class Message(object):
     'Convenient wrapper around a dictionary to provide attribute access'
     def __init__(self, *args, **kwargs):
@@ -29,3 +31,11 @@ class Message(object):
         :returns: dict
         '''
         return self.bundle
+
+    def as_msgpack(self):
+        '''
+        representation of this message as a msgpack object
+
+        :returns: str
+        '''
+        return msgpack.packb(self.as_dict())
