@@ -26,3 +26,8 @@ Indices and tables
 * :ref:`modindex`
 * :ref:`search`
 
+
+License
+=======
+
+.. literalinclude:: ../LICENSE.md
