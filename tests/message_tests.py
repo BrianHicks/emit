@@ -16,3 +16,11 @@ class MessageTests(TestCase):
         x = Message(x=1, y=2)
         self.assertIn('x', dir(x))
         self.assertIn('y', dir(x))
+
+    def test_as_dict(self):
+        'returns dict from .as_dict'
+        x = Message(x=1, y=2)
+        self.assertEqual(
+            {'x': 1, 'y': 2},
+            x.as_dict()
+        )

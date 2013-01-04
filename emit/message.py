@@ -21,3 +21,11 @@ class Message(object):
         return 'Message(%s)' % (
             ', '.join('%s=%s' % pair for pair in self.bundle.items())
         )
+
+    def as_dict(self):
+        '''\
+        representation of this message as a dictionary
+
+        :returns: dict
+        '''
+        return self.bundle
