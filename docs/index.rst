@@ -17,6 +17,7 @@ Contents:
 
    getting-started
    celery
+   api-documentation
 
 
 Indices and tables
