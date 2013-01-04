@@ -31,7 +31,8 @@ class MultiLangNode(object):
         'call the command specified, processing output'
         process = Popen(
             self.get_command(),
-            stdout=PIPE, stderr=PIPE, stdin=PIPE
+            stdout=PIPE, stderr=PIPE, stdin=PIPE,
+            cwd=self.get_cwd()
         )
 
         stdout, stderr = process.communicate(msg.as_msgpack())
@@ -47,6 +48,12 @@ class MultiLangNode(object):
     def get_command(self):
         'get the command as a list'
         return shlex.split(self.command)
+
+    def get_cwd(self):
+        try:
+            return self.cwd
+        except AttributeError:
+            return None
 
     def deserialize(self, msg):
         'deserialize output to a Python object'

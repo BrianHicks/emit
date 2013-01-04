@@ -7,11 +7,13 @@ from emit.router import Router
 from emit.multilang import MultiLangNode
 
 class SampleNode(MultiLangNode):
-    command = 'python examples/multilang/test.py'
+    command = 'python test.py'
+    cwd = 'examples/multilang'
 
 
 class SampleRubyNode(MultiLangNode):
-    command = 'ruby examples/multilang/test.rb'
+    command = 'bundle exec ruby test.rb'
+    cwd = 'examples/multilang'
 
 
 class MultiLangNodeTests(TestCase):
@@ -32,12 +34,26 @@ class MultiLangNodeTests(TestCase):
 
     def test_get_command(self):
         'get_command gets command'
-        node = SampleNode()
-
         self.assertEqual(
-            ['python', 'examples/multilang/test.py'],
+            ['python', 'test.py'],
             self.raw.get_command()
         )
+
+    def test_get_cwd(self):
+        'get_cwd gets cwd'
+        self.assertEqual(
+            'examples/multilang',
+            self.raw.get_cwd()
+        )
+
+    def test_get_cwd_none(self):
+        'get_cwd gets None if cwd is undefined'
+        class NoCwd(MultiLangNode):
+            command = 'x'
+
+        raw = NoCwd()
+
+        self.assertEqual(None, raw.get_cwd())
 
     def test_runs(self):
         'running returns proper output'
@@ -50,4 +66,20 @@ class MultiLangNodeTests(TestCase):
                 {'n': 4}
             ),
             self.node(count=5)
+        )
+
+    def test_runs_ruby(self):
+        'running ruby example works'
+        r = Router()
+        rb_node = r.node(['n'])(SampleRubyNode())
+
+        self.assertEqual(
+            (
+                {'n': 0},
+                {'n': 1},
+                {'n': 2},
+                {'n': 3},
+                {'n': 4}
+            ),
+            rb_node(count=5)
         )
