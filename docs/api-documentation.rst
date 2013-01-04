@@ -60,3 +60,4 @@ Message
 .. module:: emit.message
 
 .. autoclass:: Message
+   :members:
