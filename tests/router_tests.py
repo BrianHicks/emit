@@ -120,6 +120,7 @@ class RouterTests(TestCase):
             return msg.i * 2
 
         yield_n(to=n)
+
         self.assertEqual(doubles, returned_doubles)
         self.assertEqual(squares, returned_squares)
 

@@ -222,7 +222,7 @@ class Router(object):
 
         for sub in subs:
             self.logger.debug('routing "%s" -> "%s"', origin, sub)
-            return self.dispatch(sub, message)
+            self.dispatch(sub, message)
 
     def dispatch(self, subscriber, message):
         '''\
