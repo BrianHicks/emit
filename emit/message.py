@@ -15,3 +15,9 @@ class Message(object):
     def __dir__(self):
         'get directory of attributes. include bundle.'
         return sorted(list(['bundle'] + self.bundle.keys()))
+
+    def __repr__(self):
+        'representation of this message'
+        return 'Message(%s)' % (
+            ', '.join('%s=%s' % pair for pair in self.bundle.items())
+        )
