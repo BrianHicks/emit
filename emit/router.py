@@ -2,12 +2,15 @@
 from functools import wraps
 from types import GeneratorType
 
+from .message import Message
+
 class Router(object):
-    def __init__(self, initial_routes=None, celery_task=None):
+    def __init__(self, initial_routes=None, celery_task=None, message_class=None):
         self.routes = initial_routes or {}
         self.fields = {}
         self.functions = {}
         self.celery_task = celery_task
+        self.message_class = message_class or Message
 
     def node(self, fields, subscribe_to=None, celery_task=None):
         'decorator for nodes connecting the emit graph'
@@ -71,7 +74,7 @@ class Router(object):
             # it's neither, and we don't handle that
             raise TypeError('Pass either keyword arguments or a dictionary argument')
 
-        return result
+        return self.message_class(result)
 
     def register(self, name, func, fields, subscribe_to):
         'register a name in the graph'

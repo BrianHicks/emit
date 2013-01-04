@@ -4,6 +4,7 @@ from unittest import TestCase
 from celery import Celery, Task
 
 from emit.router import Router
+from emit.message import Message
 
 def get_test_celery():
     celery = Celery()
@@ -70,7 +71,7 @@ class RouterTests(TestCase):
 
         @self.router.node(['sum', 'x', 'y'])
         def add(msg):
-            return msg['x'] + msg['y'], msg['x'], msg['y']
+            return msg.x + msg.y, msg.x, msg.y
 
         self.assertEqual(
             {'sum': 3, 'x': 1, 'y': 2},
@@ -81,8 +82,8 @@ class RouterTests(TestCase):
         'calling a function that yields returns multiple results'
         @self.router.node(['combination'])
         def suffixes(msg):
-            for suf in msg['sufs']:
-                yield msg['pre'] + suf
+            for suf in msg.sufs:
+                yield msg.pre + suf
 
         self.assertEqual(
             (
@@ -105,18 +106,18 @@ class RouterTests(TestCase):
 
         @self.router.node(['i'])
         def yield_n(msg):
-            for i in range(msg['to']):
+            for i in range(msg.to):
                 yield i
 
         @self.router.node(['squared'], ['yield_n'])
         def square(msg):
-            returned_squares.append(msg['i'] * msg['i'])
-            return msg['i'] * msg['i']
+            returned_squares.append(msg.i ** 2)
+            return msg.i ** 2
 
         @self.router.node(['doubled'], ['yield_n'])
         def double(msg):
-            returned_doubles.append(msg['i'] * 2)
-            return msg['i'] * 2
+            returned_doubles.append(msg.i * 2)
+            return msg.i * 2
 
         yield_n(to=n)
         self.assertEqual(doubles, returned_doubles)
@@ -138,6 +139,18 @@ class RouterTests(TestCase):
 
         self.assertEqual('tests.router_tests.test', self.router.get_name(l))
 
+    def test_custom_message(self):
+        'sends a custom message type'
+        class CMessage(Message):
+            pass
+
+        r = Router(message_class=CMessage)
+
+        @r.node(['x'])
+        def test(x):
+            self.assertTrue(isinstance(x, CMessage))
+
+        test(x=1)
 
 class CeleryRouterTests(TestCase):
     'tests for using celery to route nodes'
@@ -166,19 +179,3 @@ class CeleryRouterTests(TestCase):
         self.assertTrue(
             isinstance(r.functions['tests.router_tests.test'], Task)
         )
-
-    #def test_routes(self):
-        #'routes correctly'
-        #@self.router.node(['n'], celery_task=self.celery.task)
-        #def emit_n(n):
-            #for i in range(n):
-                #yield i
-
-        #squares = []
-
-        #@self.router.node(['square'], 'tests.router_tests.emit_n', celery_task=self.celery.task)
-        #def square(msg):
-            #squares.append(msg['i'] ** 2)
-
-        #emit_n.delay(5)
-        #self.assertEqual([0, 1, 4, 9, 16], squares)
