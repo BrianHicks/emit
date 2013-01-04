@@ -6,11 +6,17 @@
 Welcome to Emit's documentation!
 ================================
 
+Emit is a library that hooks into Celery (or just local memory) to provide
+subscriptions and notifications for your functions. It makes stream processing a
+whole lot easier.
+
 Contents:
 
 .. toctree::
    :maxdepth: 2
 
+   getting-started
+   celery
 
 
 Indices and tables

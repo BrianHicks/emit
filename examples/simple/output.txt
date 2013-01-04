@@ -1,0 +1,17 @@
+got document
+got word (the)
+got word (rain)
+got word (in)
+got word (spain)
+got word (falls)
+got word (mainly)
+got word (on)
+got word (the)
+got word (plain)
+
+Top 5 words:
+    the: 2
+    on: 1
+    plain: 1
+    mainly: 1
+    rain: 1
