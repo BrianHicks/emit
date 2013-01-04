@@ -39,7 +39,29 @@ class Router(object):
         self.route('__entry_point', kwargs)
 
     def node(self, fields, subscribe_to=None, celery_task=None, entry_point=False):
-        'decorator for nodes connecting the emit graph'
+        '''\
+        Decorate a function to make it a node.
+
+        .. note::
+           decorating as a node changes the function signature. Nodes should
+           accept a single argument, which will be a
+           :py:class:`emit.message.Message`. Nodes can be called directly by
+           providing a dictionary argument or a set of keyword arguments. Other
+           uses will raise a ``TypeError``.
+
+        :param fields: fields that this function returns
+        :type fields: ordered iterable
+        :param subscribe_to: functions in the graph to subscribe to
+        :type subscribe_to: :py:class:`str` or iterable of :py:class:`str`
+        :param celery_task: celery task to apply to only this node. Use this to
+                            add custom celery attributes (like rate limiting)
+        :type celery_task: any celery task type
+        :param entry_point: Set to ``True`` to mark this as an entry point -
+                            that is, this function will be called when the
+                            router is called directly.
+        :type entry_point: :py:class:`bool`
+        :returns: decorated and wrapped function, or decorator if called directly
+        '''
         def outer(func):
             'outer level function'
             # create a wrapper function
