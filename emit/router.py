@@ -2,6 +2,8 @@
 from functools import wraps
 from types import GeneratorType
 
+import logging
+
 from .message import Message
 
 class Router(object):
@@ -27,6 +29,9 @@ class Router(object):
         self.celery_task = celery_task
         self.message_class = message_class or Message
 
+        self.logger = logging.getLogger(__name__ + '.Router')
+        self.logger.debug('Initialized Router')
+
     def __call__(self, **kwargs):
         '''\
         Route a message to all nodes marked as entry points.
@@ -36,6 +41,7 @@ class Router(object):
            (dictionary) as other points in this API do - it must be expanded to
            keyword arguments in this case.
         '''
+        self.logger.info('Calling entry point with %r', kwargs)
         self.route('__entry_point', kwargs)
 
     def node(self, fields, subscribe_to=None, celery_task=None, entry_point=False):
@@ -65,10 +71,13 @@ class Router(object):
         def outer(func):
             'outer level function'
             # create a wrapper function
+            self.logger.debug('wrapping %s', func)
             @wraps(func)
             def inner(*args, **kwargs):
                 'innermost function'
-                result = func(self.get_message_from_call(*args, **kwargs))
+                message = self.get_message_from_call(*args, **kwargs)
+                self.logger.info('calling "%s" with %r', name, message)
+                result = func(message)
 
                 # functions can return multiple values ("emit" multiple times)
                 # by yielding instead of returning. Handle this case by making
@@ -82,6 +91,9 @@ class Router(object):
                         self.wrap_result(name, item)
                         for item in result
                     ]
+                    self.logger.debug(
+                        '%s returned generator yielding %d items', func, len(results)
+                    )
 
                     [self.route(name, item) for item in results]
                     return tuple(results)
@@ -90,6 +102,9 @@ class Router(object):
                 # return the value.
                 else:
                     result = self.wrap_result(name, result)
+                    self.logger.debug(
+                        '%s returned single value %s', func, result
+                    )
                     self.route(name, result)
                     return result
 
@@ -124,12 +139,18 @@ class Router(object):
         '''
         if len(args) == 1 and isinstance(args[0], dict):
             # then it's a message
+            self.logger.debug('called with arg dictionary')
             result = args[0]
         elif len(args) == 0 and kwargs != {}:
             # then it's a set of kwargs
+            self.logger.debug('called with kwargs')
             result = kwargs
         else:
             # it's neither, and we don't handle that
+            self.logger.error(
+                'get_message_from_call could not handle "%r", "%r"',
+                args, kwargs
+            )
             raise TypeError('Pass either keyword arguments or a dictionary argument')
 
         return self.message_class(result)
@@ -146,6 +167,7 @@ class Router(object):
         ``fields``, ``subscribe_to`` and ``entry_point`` are the same as in
         :py:meth:`Router.node`.
         '''
+
         self.fields[name] = fields
         self.functions[name] = func
 
@@ -154,6 +176,8 @@ class Router(object):
 
         if entry_point:
             self.add_routes('__entry_point', name)
+
+        self.logger.info('registered %s', name)
 
     def add_routes(self, origins, destination):
         '''
@@ -176,6 +200,7 @@ class Router(object):
         for origin in list(origins):
             self.routes.setdefault(origin, set())
             self.routes[origin].add(destination)
+            self.logger.info('added route "%s" -> "%s"', origin, destination)
 
     def route(self, origin, message):
         '''\
@@ -189,9 +214,14 @@ class Router(object):
         try:
             subs = self.routes[origin]
         except KeyError:
+            # this is debug although it sounds dire. That's because every node,
+            # no matter how inconsequential, tries to route. The log would be
+            # very full if this was higher.
+            self.logger.debug('no routes for "%s", exiting', origin)
             return
 
         for sub in subs:
+            self.logger.debug('routing "%s" -> "%s"', origin, sub)
             return self.dispatch(sub, message)
 
     def dispatch(self, subscriber, message):
@@ -209,6 +239,7 @@ class Router(object):
         func = self.functions[subscriber]
 
         if hasattr(func, 'delay'):
+            self.logger.debug('delaying %r', func)
             return func.delay(message)
         else:
             return func(message)
