@@ -22,7 +22,7 @@ def count_word(msg):
     return msg.word, redis.zincrby('word_counts', msg.word, 1)
 
 import random
-document = 'the words in this document will be counted and emitted by count_words'.split(' ')
+document = 'the words in this document will be counted and emitted by count_word'.split(' ')
 router(document=' '.join(random.choice(document) for i in range(20)))
 ```
 
