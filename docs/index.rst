@@ -19,6 +19,7 @@ Contents:
    celery
    multilang
    api-documentation
+   glossary
 
 
 Indices and tables
