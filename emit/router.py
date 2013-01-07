@@ -238,6 +238,11 @@ class Router(object):
         # do it just in time to route.
         self.resolve_node_modules()
 
+        # ndoes can subscribe to all messages with '*'. We'll route to all of
+        # them before we route to actual subscribers.
+        if origin != '*':
+            self.route('*', message)
+
         try:
             subs = self.routes[origin]
         except KeyError:
