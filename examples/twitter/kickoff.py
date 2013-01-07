@@ -2,7 +2,7 @@ import json
 import os
 import requests
 
-from tasks import tweet_text
+from app import router
 
 twitter = requests.get(
     'https://stream.twitter.com/1.1/statuses/sample.json',
@@ -12,4 +12,4 @@ twitter = requests.get(
 
 for line in twitter.iter_lines():
     if line: # filter out keep-alive lines
-        tweet_text(response=json.loads(line))
+        router(response=json.loads(line))

@@ -10,4 +10,4 @@ app.conf.update(
     CELERY_IMPORTS = ('tasks',)
 )
 
-router = Router(celery_task=app.task)
+router = Router(celery_task=app.task, imports=['tasks'])

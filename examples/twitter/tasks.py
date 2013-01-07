@@ -3,7 +3,7 @@ from app import router
 
 redis = Redis()
 
-@router.node(['tweet'])
+@router.node(['tweet'], entry_point=True)
 def tweet_text(msg):
     'given a twitter API response, get the tweet content'
     if 'text' in msg.response:
