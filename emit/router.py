@@ -11,7 +11,7 @@ class Router(object):
     'A router object. Holds routes and references to functions for dispatch'
     def __init__(self,
                 initial_routes=None, celery_task=None, message_class=None,
-                imports=None, import_package=None):
+                node_modules=None, node_package=None):
         '''\
         Create a new router object. All parameters are optional.
 
@@ -22,6 +22,11 @@ class Router(object):
         :type celery_task: A celery task decorator, in any form
         :param message_class: wrapper class for messages passed to nodes
         :type message_class: :py:class:`emit.message.Message` or subclass
+        :param node_modules: a list of modules that contain nodes
+        :type node_modules: a list of :py:class:`str`, or ``None``.
+        :param node_package: if any node_modules are relative, the path to base
+                               off of.
+        :type node_package: :py:class:`str`, or ``None``.
 
         :exceptions: None
         :returns: None
@@ -33,9 +38,9 @@ class Router(object):
         self.message_class = message_class or Message
 
         # manage imported packages, lazily importing before the first route
-        self.resolved_imports = False
-        self.imports = imports or []
-        self.import_package = import_package
+        self.resolved_node_modules = False
+        self.node_modules = node_modules or []
+        self.node_package = node_package
 
         self.logger = logging.getLogger(__name__ + '.Router')
         self.logger.debug('Initialized Router')
@@ -133,15 +138,15 @@ class Router(object):
 
         return outer
 
-    def resolve_imports(self):
+    def resolve_node_modules(self):
         'import the modules specified in init'
-        if self.resolved_imports:
+        if self.resolved_node_modules:
             return
 
-        for _import in self.imports:
-            importlib.import_module(_import, self.import_package)
+        for _import in self.node_modules:
+            importlib.import_module(_import, self.node_package)
 
-        self.resolved_imports = True
+        self.resolved_node_modules = True
 
     def get_message_from_call(self, *args, **kwargs):
         '''\
@@ -231,7 +236,7 @@ class Router(object):
         # side-effect: we have to know all the routes before we can route. But
         # we can't resolve them while the object is initializing, so we have to
         # do it just in time to route.
-        self.resolve_imports()
+        self.resolve_node_modules()
 
         try:
             subs = self.routes[origin]

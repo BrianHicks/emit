@@ -12,6 +12,6 @@ app.conf.update(
     CELERY_IMPORTS = ('tasks',)
 )
 
-router = Router(celery_task=app.task, imports=['tasks'])
+router = Router(celery_task=app.task, node_modules=['tasks'])
 
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
