@@ -1,12 +1,12 @@
 from emit import Router
-from emit.multilang import MultiLangNode
+from emit.multilang import ShellNode
 
 router = Router()
 
 @router.node(['n'])
-class PythonShellNode(MultiLangNode):
+class PythonShellNode(ShellNode):
     command = 'python test.py'
 
 @router.node(['n'])
-class RubyShellNode(MultiLangNode):
+class RubyShellNode(ShellNode):
     command = 'bundle exec ruby test.rb'

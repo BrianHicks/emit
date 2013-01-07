@@ -5,11 +5,11 @@ import shlex
 from subprocess import Popen, PIPE
 
 
-class MultiLangNode(object):
+class ShellNode(object):
     '''\
     callable object to wrap communication to a node in another language
 
-    to use this, subclass ``MultiLangNode``, providing "command". Decorate it
+    to use this, subclass ``ShellNode``, providing "command". Decorate it
     however you feel like.
 
     Messages will be passed in on lines in msgpack format. This class expects

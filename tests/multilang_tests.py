@@ -4,20 +4,20 @@ from unittest import TestCase
 import msgpack
 
 from emit.router import Router
-from emit.multilang import MultiLangNode
+from emit.multilang import ShellNode
 
-class SampleNode(MultiLangNode):
+class SampleNode(ShellNode):
     command = 'python test.py'
     cwd = 'examples/multilang'
 
 
-class SampleRubyNode(MultiLangNode):
+class SampleRubyNode(ShellNode):
     command = 'bundle exec ruby test.rb'
     cwd = 'examples/multilang'
 
 
-class MultiLangNodeTests(TestCase):
-    'tests for MultiLangNode'
+class ShellNodeTests(TestCase):
+    'tests for ShellNode'
     def setUp(self):
         self.raw = SampleNode()
         self.node = Router().node(['n'])(self.raw)
@@ -48,7 +48,7 @@ class MultiLangNodeTests(TestCase):
 
     def test_get_cwd_none(self):
         'get_cwd gets None if cwd is undefined'
-        class NoCwd(MultiLangNode):
+        class NoCwd(ShellNode):
             command = 'x'
 
         raw = NoCwd()

@@ -67,7 +67,7 @@ Multilang
 
 .. module:: emit.multilang
 
-.. autoclass:: MultiLangNode
+.. autoclass:: ShellNode
    :members:
 
-   .. automethod:: MultiLangNode.__call__
+   .. automethod:: ShellNode.__call__

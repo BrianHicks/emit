@@ -23,7 +23,7 @@ be msgpack messages separated by newlines.
 Creating a Node
 ---------------
 
-We'll be subclassing :py:class:`emit.multilang.MultiLangNode` to tell emit how
+We'll be subclassing :py:class:`emit.multilang.ShellNode` to tell emit how
 to execute our task:
 
 .. literalinclude:: ../examples/multilang/graph.py
