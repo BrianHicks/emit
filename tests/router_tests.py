@@ -2,6 +2,7 @@
 from unittest import TestCase
 
 from celery import Celery, Task
+import mock
 
 from emit.router import Router
 from emit.message import Message
@@ -163,6 +164,37 @@ class RouterTests(TestCase):
             RuntimeError, 'test was called',
             self.router, x=1
         )
+
+
+    @mock.patch('emit.router.importlib')
+    def test_registers_node_modules(self, mock_importlib):
+        'register node modules in init (instead of importing right away)'
+        r = Router(node_modules=['test'], node_package='test')
+
+        self.assertEqual(['test'], r.node_modules)
+        self.assertEqual('test', r.node_package)
+        self.assertEqual(False, r.resolved_node_modules)
+        self.assertEqual(0, mock_importlib.import_module.call_count)
+
+    @mock.patch('emit.router.importlib')
+    def test_imports_with_resolve_node_modules(self, mock_importlib):
+        'resolves imports'
+        r = Router(node_modules=['test'], node_package='test')
+        r.resolve_node_modules()
+
+        mock_importlib.import_module.assert_called_with('test', 'test')
+
+    @mock.patch('emit.router.importlib')
+    def test_imports_only_once(self, mock_importlib):
+        'resolves imports only once'
+        r = Router(node_modules=['test'], node_package='test')
+
+        # twice!
+        r.resolve_node_modules()
+        r.resolve_node_modules()
+
+        self.assertEqual(1, mock_importlib.import_module.call_count)
+
 
 class CeleryRouterTests(TestCase):
     'tests for using celery to route nodes'
