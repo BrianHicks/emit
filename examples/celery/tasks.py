@@ -1,7 +1,7 @@
 from redis import Redis
 from app import app, router
 
-@router.node(['word'])
+@router.node(['word'], entry_point=True)
 def emit_words(msg):
     for word in msg.document.strip().split(' '):
         yield word
