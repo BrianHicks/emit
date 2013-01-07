@@ -70,7 +70,8 @@ class Router(object):
 
         :param fields: fields that this function returns
         :type fields: ordered iterable of :py:class:`str`
-        :param subscribe_to: functions in the graph to subscribe to
+        :param subscribe_to: functions in the graph to subscribe to. Include
+                             "*" to route to this function after every emit.
         :type subscribe_to: :py:class:`str` or iterable of :py:class:`str`
         :param celery_task: celery task to apply to only this node. Use this to
                             add custom celery attributes (like rate limiting)
