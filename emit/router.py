@@ -238,19 +238,26 @@ class Router(object):
         # do it just in time to route.
         self.resolve_node_modules()
 
-        # ndoes can subscribe to all messages with '*'. We'll route to all of
-        # them before we route to actual subscribers.
-        if origin != '*':
-            self.route('*', message)
-
+        subs = set()
         try:
-            subs = self.routes[origin]
+            subs |= self.routes[origin]
         except KeyError:
             # this is debug although it sounds dire. That's because every node,
             # no matter how inconsequential, tries to route. The log would be
             # very full if this was higher.
-            self.logger.debug('no routes for "%s", exiting', origin)
-            return
+            self.logger.debug('no routes for "%s"', origin)
+
+        # handle the star route - add all subscribers and then remove the
+        # origin so we don't go into a loop
+        try:
+            subs |= self.routes['*']
+        except KeyError:
+            self.logger.debug('no routes for "%s"', '*')
+
+        try:
+            subs -= set([origin])
+        except KeyError:
+            pass  # no need to log this time
 
         for sub in subs:
             self.logger.debug('routing "%s" -> "%s"', origin, sub)
@@ -274,6 +281,7 @@ class Router(object):
             self.logger.debug('delaying %r', func)
             return func.delay(message)
         else:
+            self.logger.debug('calling %r directly', func)
             return func(message)
 
     def wrap_result(self, name, result):

@@ -14,6 +14,11 @@ def get_test_celery():
     )
     return celery
 
+def get_named_mock(name):
+    m = mock.MagicMock()
+    m.__name__ = name
+    return m
+
 class RouterTests(TestCase):
     def setUp(self):
         self.router = Router()
@@ -195,6 +200,14 @@ class RouterTests(TestCase):
 
         self.assertEqual(1, mock_importlib.import_module.call_count)
 
+    def test_star_route(self):
+        'star route is routed after every message'
+        func = get_named_mock('test')
+        self.router.node(['x'], '*')(func)
+
+        print self.router.routes
+        self.router()
+        self.assertEqual(1, func.call_count)
 
 class CeleryRouterTests(TestCase):
     'tests for using celery to route nodes'
