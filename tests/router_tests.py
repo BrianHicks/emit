@@ -20,6 +20,10 @@ def get_named_mock(name):
     m.__name__ = name
     return m
 
+def prefix(name):
+    return '%s.%s' % (__name__, name)
+
+
 class RouterTests(TestCase):
     def setUp(self):
         self.router = Router()
@@ -35,10 +39,10 @@ class RouterTests(TestCase):
 
         fields = ('field_a', 'field_b')
         self.router.node(fields)(a)
-        self.router.node(fields, 'tests.router_tests.a')(b)
+        self.router.node(fields, prefix('a'))(b)
 
         self.assertEqual(
-            {'tests.router_tests.a': set(['tests.router_tests.b'])},
+            {prefix('a'): set([prefix('b')])},
             self.router.routes
         )
 
@@ -51,7 +55,7 @@ class RouterTests(TestCase):
 
         self.assertEqual(
             ['a', 'b', 'c'],
-            self.router.fields['tests.router_tests.a']
+            self.router.fields[prefix('a')]
         )
 
     # add_routes
@@ -119,12 +123,12 @@ class RouterTests(TestCase):
             for i in range(msg.to):
                 yield i
 
-        @self.router.node(['squared'], ['tests.router_tests.yield_n'])
+        @self.router.node(['squared'], [prefix('yield_n')])
         def square(msg):
             returned_squares.append(msg.i ** 2)
             return msg.i ** 2
 
-        @self.router.node(['doubled'], ['tests.router_tests.yield_n'])
+        @self.router.node(['doubled'], [prefix('yield_n')])
         def double(msg):
             returned_doubles.append(msg.i * 2)
             return msg.i * 2
@@ -140,7 +144,7 @@ class RouterTests(TestCase):
         l.__name__ = 'test'
 
         self.assertEqual(
-            'tests.router_tests.test',
+            prefix('test'),
             self.router.get_name(l)
         )
 
@@ -151,7 +155,7 @@ class RouterTests(TestCase):
         l.__name__ = 'test'
         l = celery.task(l)
 
-        self.assertEqual('tests.router_tests.test', self.router.get_name(l))
+        self.assertEqual(prefix('test'), self.router.get_name(l))
 
     def test_custom_message(self):
         'sends a custom message type'
@@ -223,7 +227,7 @@ class RouterTests(TestCase):
                 yield n if n % 2 == 0 else NoResult
 
         watcher = get_named_mock('watcher')
-        self.router.node(['n'], 'tests.router_tests.n_generator')(watcher)
+        self.router.node(['n'], prefix('n_generator'))(watcher)
 
         n_generator(n=6)
 
@@ -255,7 +259,7 @@ class CeleryRouterTests(TestCase):
         self.router.node(['test'], celery_task=self.celery.task)(l)
 
         self.assertTrue(
-            isinstance(self.router.functions['tests.router_tests.test'], Task)
+            isinstance(self.router.functions[prefix('test')], Task)
         )
 
     def test_adds_when_initialized(self):
@@ -267,5 +271,5 @@ class CeleryRouterTests(TestCase):
         r.node(['test'])(l)
 
         self.assertTrue(
-            isinstance(r.functions['tests.router_tests.test'], Task)
+            isinstance(r.functions[prefix('test')], Task)
         )
