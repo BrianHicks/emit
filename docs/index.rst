@@ -23,6 +23,7 @@ Contents:
    getting-started
    celery
    multilang
+   star-routing
    api-documentation
    glossary
 
