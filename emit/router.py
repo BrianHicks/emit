@@ -264,23 +264,23 @@ class Router(object):
         except KeyError:
             pass  # no need to log this time
 
-        for sub in subs:
-            self.logger.debug('routing "%s" -> "%s"', origin, sub)
-            self.dispatch(sub, message)
+        for destination in subs:
+            self.logger.debug('routing "%s" -> "%s"', origin, destination)
+            self.dispatch(destination, message)
 
-    def dispatch(self, subscriber, message):
+    def dispatch(self, destination, message):
         '''\
         dispatch a message to a named function
 
-        :param subscriber: subscriber to dispatch to
-        :type subscriber: :py:class:`str`
+        :param destination: destination to dispatch to
+        :type destination: :py:class:`str`
         :param message: message to dispatch
         :type message: :py:class:`emit.message.Message` or subclass
 
         Will delay the message (using celery) instead of calling it directly if
         possible.
         '''
-        func = self.functions[subscriber]
+        func = self.functions[destination]
 
         if hasattr(func, 'delay'):
             self.logger.debug('delaying %r', func)
