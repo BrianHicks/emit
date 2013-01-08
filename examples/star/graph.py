@@ -5,9 +5,6 @@ from redis import Redis
 router = Router()
 redis = Redis()
 
-def prefix(name):
-    return '%s.%s' % (__name__, name)
-
 @router.node(('key', 'value'), entry_point=True)
 def parse_querystring(msg):
     'parse a querystring into keys and values'
