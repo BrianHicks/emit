@@ -1,6 +1,9 @@
 'class to communicate with other languages over stdin/out'
 import logging
-import msgpack
+try:
+    import msgpack
+except ImportError:
+    import msgpack_pure
 import shlex
 from subprocess import Popen, PIPE
 
