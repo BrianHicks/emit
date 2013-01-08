@@ -36,6 +36,7 @@ Some Links:
 Supported Pythons:
 
  - CPython 2.7.2
+ - CPython 3.2
  - PyPy 1.9
 
 Be sure to check [Travis][travis] to see if the platform you want is currently
