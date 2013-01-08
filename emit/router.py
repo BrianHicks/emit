@@ -38,6 +38,7 @@ class Router(object):
         self.routes = initial_routes or {}
         self.fields = initial_fields or {}
         self.functions = initial_functions or {}
+        self.ignores = {}
 
         self.celery_task = celery_task
 
@@ -111,7 +112,8 @@ class Router(object):
         return wrapped
 
 
-    def node(self, fields, subscribe_to=None, celery_task=None, entry_point=False):
+    def node(self, fields, subscribe_to=None, celery_task=None,
+             entry_point=False, ignores=None):
         '''\
         Decorate a function to make it a node.
 
@@ -153,7 +155,9 @@ class Router(object):
 
             # register the task in the graph
             name = self.get_name(func)
-            self.register(name, wrapped, fields, subscribe_to, entry_point)
+            self.register(
+                name, wrapped, fields, subscribe_to, entry_point, ignores
+            )
 
             return wrapped
 
@@ -199,7 +203,7 @@ class Router(object):
 
         return self.message_class(result)
 
-    def register(self, name, func, fields, subscribe_to, entry_point):
+    def register(self, name, func, fields, subscribe_to, entry_point, ignores):
         '''
         Register a named function in the graph
 
@@ -216,6 +220,9 @@ class Router(object):
 
         if subscribe_to:
             self.add_routes(subscribe_to, name)
+
+        if ignores:
+            self.add_ignores(ignores, name)
 
         if entry_point:
             self.add_routes('__entry_point', name)
@@ -245,6 +252,23 @@ class Router(object):
             self.routes[origin].add(destination)
             self.logger.info('added route "%s" -> "%s"', origin, destination)
 
+    def add_ignores(self, origins, destination):
+        '''
+        Add routes to the ignore dictionary
+
+        :param origins: a number of origins to register
+        :type origins: :py:class:`str` or iterable of :py:class:`str`
+        :param destination: destination which ignores messages from origins
+        :type destination: :py:class:`str`
+        '''
+        if not isinstance(origins, list):
+            origins = [origins]
+
+        for origin in origins:
+            self.ignores.setdefault(origin, set())
+            self.ignores[origin].add(destination)
+            self.logger.info('added ignore "%s" ! "%s"', origin, destination)
+
     def route(self, origin, message):
         '''\
         Using the routing dictionary, dispatch a message to all subscribers
@@ -266,6 +290,9 @@ class Router(object):
         # origin so we don't go into a loop
         subs |= self.routes.get('*', set())
         subs -= set([origin])
+
+        # remove any functions which have asked not be notified of this origin
+        subs -= self.ignores.get(origin, set())
 
         for destination in subs:
             self.logger.debug('routing "%s" -> "%s"', origin, destination)

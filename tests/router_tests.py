@@ -246,6 +246,20 @@ class RouterTests(TestCase):
 
         self.assertEqual(0, watcher.call_count)
 
+    def test_ignores(self):
+        'a function which ignores another function should not be called'
+        func = lambda msg: 1
+        func.__name__ = 'one'
+        func = self.router.node(['n'])(func)
+
+        watcher = get_named_mock('watcher')
+        self.router.node(['n'], '*', ignores=prefix('one'))(watcher)
+
+        func(n=1)
+
+        self.assertEqual(0, watcher.call_count)
+
+
 class CeleryRouterTests(TestCase):
     'tests for using celery to route nodes'
     def setUp(self):
