@@ -260,25 +260,12 @@ class Router(object):
         self.resolve_node_modules()
 
         subs = set()
-        try:
-            subs |= self.routes[origin]
-        except KeyError:
-            # this is debug although it sounds dire. That's because every node,
-            # no matter how inconsequential, tries to route. The log would be
-            # very full if this was higher.
-            self.logger.debug('no routes for "%s"', origin)
+        subs |= self.routes.get(origin, set())
 
         # handle the star route - add all subscribers and then remove the
         # origin so we don't go into a loop
-        try:
-            subs |= self.routes['*']
-        except KeyError:
-            self.logger.debug('no routes for "%s"', '*')
-
-        try:
-            subs -= set([origin])
-        except KeyError:
-            pass  # no need to log this time
+        subs |= self.routes.get('*', set())
+        subs -= set([origin])
 
         for destination in subs:
             self.logger.debug('routing "%s" -> "%s"', origin, destination)
