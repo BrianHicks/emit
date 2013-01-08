@@ -318,4 +318,7 @@ class Router(object):
         if hasattr(func, 'name'):  # celery-decorated function
             return func.name
 
-        return func.__name__
+        return '%s.%s' % (
+            func.__module__,
+            func.__name__
+        )

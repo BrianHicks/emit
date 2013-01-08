@@ -35,9 +35,12 @@ class RouterTests(TestCase):
 
         fields = ('field_a', 'field_b')
         self.router.node(fields)(a)
-        self.router.node(fields, 'a')(b)
+        self.router.node(fields, 'tests.router_tests.a')(b)
 
-        self.assertEqual({'a': set('b')}, self.router.routes)
+        self.assertEqual(
+            {'tests.router_tests.a': set(['tests.router_tests.b'])},
+            self.router.routes
+        )
 
     def test_node_adds_fields(self):
         'router adds fields when decorating'
@@ -48,7 +51,7 @@ class RouterTests(TestCase):
 
         self.assertEqual(
             ['a', 'b', 'c'],
-            self.router.fields['a']
+            self.router.fields['tests.router_tests.a']
         )
 
     # add_routes
@@ -116,12 +119,12 @@ class RouterTests(TestCase):
             for i in range(msg.to):
                 yield i
 
-        @self.router.node(['squared'], ['yield_n'])
+        @self.router.node(['squared'], ['tests.router_tests.yield_n'])
         def square(msg):
             returned_squares.append(msg.i ** 2)
             return msg.i ** 2
 
-        @self.router.node(['doubled'], ['yield_n'])
+        @self.router.node(['doubled'], ['tests.router_tests.yield_n'])
         def double(msg):
             returned_doubles.append(msg.i * 2)
             return msg.i * 2
@@ -136,7 +139,10 @@ class RouterTests(TestCase):
         l = lambda x: x
         l.__name__ = 'test'
 
-        self.assertEqual('test', self.router.get_name(l))
+        self.assertEqual(
+            'tests.router_tests.test',
+            self.router.get_name(l)
+        )
 
     def test_get_name_celery(self):
         'gets the name of a celery-decorated function'
@@ -217,7 +223,7 @@ class RouterTests(TestCase):
                 yield n if n % 2 == 0 else NoResult
 
         watcher = get_named_mock('watcher')
-        self.router.node(['n'], 'n_generator')(watcher)
+        self.router.node(['n'], 'tests.router_tests.n_generator')(watcher)
 
         n_generator(n=6)
 
