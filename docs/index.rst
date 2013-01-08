@@ -13,6 +13,7 @@ whole lot easier.
 Supported Pythons:
 
 * CPython 2.7.2
+* CPython 3.2
 * PyPy 1.9
 
 Contents:
