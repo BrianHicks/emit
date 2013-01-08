@@ -33,6 +33,14 @@ Some Links:
  - [Github][github]
  - [Apache License][license]
 
+Supported Pythons:
+
+ - CPython 2.7.2
+ - PyPy 1.9
+
+Be sure to check [Travis][travis] to see if the platform you want is currently
+passing. It may not be.
+
 [celery-docs]: https://emit.readthedocs.org/en/latest/celery.html "Celery Documentation"
 [multilang-docs]: https://emit.readthedocs.org/en/latest/multilang.html "Multilang Documentation"
 [docs]: http://emit.readthedocs.org/en/latest/ "Emit Documentation"
