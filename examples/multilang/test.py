@@ -1,6 +1,9 @@
 'test for multilang'
 import sys
-import msgpack
+try:
+    import msgpack
+except ImportError:
+    import msgpack_pure as msgpack
 
 message = msgpack.unpackb(sys.stdin.read())
 

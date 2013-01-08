@@ -1,7 +1,10 @@
 'tests for multilang'
 from unittest import TestCase
 
-import msgpack
+try:
+    import msgpack
+except ImportError:
+    import msgpack_pure as msgpack
 
 from emit.router import Router
 from emit.multilang import ShellNode

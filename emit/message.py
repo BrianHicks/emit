@@ -1,5 +1,8 @@
 'message wrapper to be passed to functions'
-import msgpack
+try:
+    import msgpack
+except ImportError:
+    import msgpack_pure as msgpack
 
 class Message(object):
     'Convenient wrapper around a dictionary to provide attribute access'

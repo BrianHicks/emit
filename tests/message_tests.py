@@ -1,7 +1,10 @@
 'tests for message'
 from unittest import TestCase
 
-import msgpack
+try:
+    import msgpack
+except ImportError:
+    import msgpack_pure as msgpack
 
 from emit.message import Message
 
