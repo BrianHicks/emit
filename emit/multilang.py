@@ -35,13 +35,13 @@ class ShellNode(object):
             cwd=self.get_cwd()
         )
 
-        stdout, stderr = process.communicate(msg.as_json())
+        stdout, stderr = process.communicate(bytes(msg.as_json(), 'UTF-8'))
 
-        if stderr != '':
+        if stderr:
             self.logger.error('Error calling "%s": %s', self.command, stderr)
             raise RuntimeError(stderr)
 
-        messages = stdout.strip().split('\n')
+        messages = stdout.decode('UTF-8').strip().split('\n')
         self.logger.debug('subprocess returned %d messages', len(messages))
         for message in messages:
             yield self.deserialize(message)

@@ -26,7 +26,7 @@ class ShellNodeTests(TestCase):
         obj = {'x': 1, 'y': 2}
         packed = json.dumps(obj)
 
-        self.assertItemsEqual(
+        self.assertEqual(
             obj,
             self.raw.deserialize(packed)
         )
