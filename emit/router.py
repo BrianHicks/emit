@@ -269,9 +269,9 @@ class Router(object):
 
         for destination in subs:
             self.logger.debug('routing "%s" -> "%s"', origin, destination)
-            self.dispatch(destination, message)
+            self.dispatch(origin, destination, message)
 
-    def dispatch(self, destination, message):
+    def dispatch(self, origin, destination, message):
         '''\
         dispatch a message to a named function
 
@@ -287,10 +287,10 @@ class Router(object):
 
         if hasattr(func, 'delay'):
             self.logger.debug('delaying %r', func)
-            return func.delay(message)
+            return func.delay(_origin=origin, **message)
         else:
             self.logger.debug('calling %r directly', func)
-            return func(message)
+            return func(_origin=origin, **message)
 
     def wrap_result(self, name, result):
         '''
