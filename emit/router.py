@@ -17,6 +17,10 @@ class Router(object):
 
         :param initial_routes: custom routes to initiate router with
         :type initial_routes: dict
+        :param initial_fields: custom fields to wrap output in
+        :type initial_fields: dict
+        :param initial_functions: named functions to call
+        :type initial_functions: dict
         :param celery_task: celery task to apply to all nodes (can be
                             overridden in :py:meth:`Router.node`.)
         :type celery_task: A celery task decorator, in any form
