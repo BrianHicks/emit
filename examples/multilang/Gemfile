@@ -1,2 +1,2 @@
 source "http://rubygems.org"
-gem "msgpack"
+gem "json"
