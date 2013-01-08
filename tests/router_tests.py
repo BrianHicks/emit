@@ -5,7 +5,7 @@ from celery import Celery, Task
 import mock
 
 from emit.router import Router
-from emit.message import Message
+from emit.message import Message, NoResult
 
 def get_test_celery():
     celery = Celery()
@@ -208,6 +208,33 @@ class RouterTests(TestCase):
         print self.router.routes
         self.router()
         self.assertEqual(1, func.call_count)
+
+    def test_no_result_generator(self):
+        'a generator returning NoResult should only pass on non-NoResults'
+        @self.router.node(['n'])
+        def n_generator(msg):
+            for n in range(msg.n):
+                yield n if n % 2 == 0 else NoResult
+
+        watcher = get_named_mock('watcher')
+        self.router.node(['n'], 'n_generator')(watcher)
+
+        n_generator(n=6)
+
+        self.assertEqual(3, watcher.call_count)
+
+    def test_no_result_single(self):
+        'a function returning NoResult should only pass on non-NoResults'
+        func = lambda msg: NoResult
+        func.__name__ = 'func'
+        func = self.router.node(['n'])(func)
+
+        watcher = get_named_mock('watcher')
+        self.router.node(['n'], 'func')(watcher)
+
+        func(n=1)
+
+        self.assertEqual(0, watcher.call_count)
 
 class CeleryRouterTests(TestCase):
     'tests for using celery to route nodes'

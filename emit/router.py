@@ -4,7 +4,7 @@ import importlib
 import logging
 from types import GeneratorType
 
-from .message import Message
+from .message import Message, NoResult
 
 
 class Router(object):
@@ -104,6 +104,7 @@ class Router(object):
                     results = [
                         self.wrap_result(name, item)
                         for item in result
+                        if item is not NoResult
                     ]
                     self.logger.debug(
                         '%s returned generator yielding %d items', func, len(results)
@@ -115,6 +116,9 @@ class Router(object):
                 # the case of a direct return is simpler. wrap, route, and
                 # return the value.
                 else:
+                    if result is NoResult:
+                        return result
+
                     result = self.wrap_result(name, result)
                     self.logger.debug(
                         '%s returned single value %s', func, result

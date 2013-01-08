@@ -39,3 +39,7 @@ class Message(object):
         :returns: str
         '''
         return msgpack.packb(self.as_dict())
+
+
+class NoResult(object):
+    pass
