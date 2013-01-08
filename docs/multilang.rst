@@ -14,11 +14,8 @@ range. Let's do it with Ruby! (why not?)
 
 (the equivalent in Python is in ``examples/multilang/test.py``)
 
-The messages passed in and out are expected to be in msgpack_ format (msgpack
-is similar to JSON, but in a binary format.) Output from the functions should
-be msgpack messages separated by newlines.
-
-.. _msgpack: http://msgpack.org/
+The messages passed in and out are expected to be in JSON format. Output from
+the functions should be json strings separated by newlines.
 
 Creating a Node
 ---------------
