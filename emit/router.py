@@ -64,6 +64,53 @@ class Router(object):
         self.logger.info('Calling entry point with %r', kwargs)
         self.route('__entry_point', kwargs)
 
+    def wrap_as_node(self, func):
+        'wrap a function as a node'
+        name = self.get_name(func)
+
+        @wraps(func)
+        def wrapped(*args, **kwargs):
+            'wrapped version of func'
+            message = self.get_message_from_call(*args, **kwargs)
+            self.logger.info('calling "%s" with %r', name, message)
+            result = func(message)
+
+            # functions can return multiple values ("emit" multiple times)
+            # by yielding instead of returning. Handle this case by making
+            # a list of the results and processing them all after the
+            # generator successfully exits. If we were to process them as
+            # they came out of the generator, we might get a partially
+            # processed input sent down the graph. This may be possible in
+            # the future via a flag.
+            if isinstance(result, GeneratorType):
+                results = [
+                    self.wrap_result(name, item)
+                    for item in result
+                    if item is not NoResult
+                ]
+                self.logger.debug(
+                    '%s returned generator yielding %d items', func, len(results)
+                )
+
+                [self.route(name, item) for item in results]
+                return tuple(results)
+
+            # the case of a direct return is simpler. wrap, route, and
+            # return the value.
+            else:
+                if result is NoResult:
+                    return result
+
+                result = self.wrap_result(name, result)
+                self.logger.debug(
+                    '%s returned single value %s', func, result
+                )
+                self.route(name, result)
+                return result
+
+        return wrapped
+
+
     def node(self, fields, subscribe_to=None, celery_task=None, entry_point=False):
         '''\
         Decorate a function to make it a node.
@@ -93,60 +140,22 @@ class Router(object):
             'outer level function'
             # create a wrapper function
             self.logger.debug('wrapping %s', func)
-            @wraps(func)
-            def inner(*args, **kwargs):
-                'innermost function'
-                message = self.get_message_from_call(*args, **kwargs)
-                self.logger.info('calling "%s" with %r', name, message)
-                result = func(message)
-
-                # functions can return multiple values ("emit" multiple times)
-                # by yielding instead of returning. Handle this case by making
-                # a list of the results and processing them all after the
-                # generator successfully exits. If we were to process them as
-                # they came out of the generator, we might get a partially
-                # processed input sent down the graph. This may be possible in
-                # the future via a flag.
-                if isinstance(result, GeneratorType):
-                    results = [
-                        self.wrap_result(name, item)
-                        for item in result
-                        if item is not NoResult
-                    ]
-                    self.logger.debug(
-                        '%s returned generator yielding %d items', func, len(results)
-                    )
-
-                    [self.route(name, item) for item in results]
-                    return tuple(results)
-
-                # the case of a direct return is simpler. wrap, route, and
-                # return the value.
-                else:
-                    if result is NoResult:
-                        return result
-
-                    result = self.wrap_result(name, result)
-                    self.logger.debug(
-                        '%s returned single value %s', func, result
-                    )
-                    self.route(name, result)
-                    return result
+            wrapped = self.wrap_as_node(func)
 
             # celery registers tasks by decorating them, and so do we, so the
             # user can pass a celery task and we'll wrap our code with theirs
             # in a nice package celery can execute.
             if celery_task or self.celery_task:
                 if celery_task:
-                    inner = celery_task(inner)
+                    wrapped = celery_task(wrapped)
                 else:
-                    inner = self.celery_task(inner)
+                    wrapped = self.celery_task(wrapped)
 
             # register the task in the graph
-            name = self.get_name(inner)
-            self.register(name, inner, fields, subscribe_to, entry_point)
+            name = self.get_name(func)
+            self.register(name, wrapped, fields, subscribe_to, entry_point)
 
-            return inner
+            return wrapped
 
         return outer
 
