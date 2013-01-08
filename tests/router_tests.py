@@ -1,4 +1,5 @@
 'tests for emit/router.py'
+from __future__ import print_function
 from unittest import TestCase
 
 from celery import Celery, Task
@@ -27,10 +28,10 @@ class RouterTests(TestCase):
     def test_node_adds_routes(self):
         'router adds routes for node when decorating'
         a = lambda x: x
-        a.func_name = 'a'
+        a.__name__ = 'a'
 
         b = lambda x: x
-        b.func_name = 'b'
+        b.__name__ = 'b'
 
         fields = ('field_a', 'field_b')
         self.router.node(fields)(a)
@@ -41,7 +42,7 @@ class RouterTests(TestCase):
     def test_node_adds_fields(self):
         'router adds fields when decorating'
         a = lambda x: x
-        a.func_name = 'a'
+        a.__name__ = 'a'
 
         self.router.node(['a', 'b', 'c'])(a)
 
@@ -131,9 +132,9 @@ class RouterTests(TestCase):
         self.assertEqual(squares, returned_squares)
 
     def test_get_name(self):
-        'get name gets the func_name property by default'
+        'get name gets the __name__ property by default'
         l = lambda x: x
-        l.func_name = 'test'
+        l.__name__ = 'test'
 
         self.assertEqual('test', self.router.get_name(l))
 
@@ -141,7 +142,7 @@ class RouterTests(TestCase):
         'gets the name of a celery-decorated function'
         celery = get_test_celery()
         l = lambda x: x
-        l.func_name = 'test'
+        l.__name__ = 'test'
         l = celery.task(l)
 
         self.assertEqual('tests.router_tests.test', self.router.get_name(l))
@@ -205,7 +206,6 @@ class RouterTests(TestCase):
         func = get_named_mock('test')
         self.router.node(['x'], '*')(func)
 
-        print self.router.routes
         self.router()
         self.assertEqual(1, func.call_count)
 
@@ -245,7 +245,7 @@ class CeleryRouterTests(TestCase):
     def test_registers_as_task(self):
         'registers the function as a task'
         l = lambda x: x
-        l.func_name = 'test'
+        l.__name__ = 'test'
         self.router.node(['test'], celery_task=self.celery.task)(l)
 
         self.assertTrue(
@@ -257,7 +257,7 @@ class CeleryRouterTests(TestCase):
         r = Router(celery_task=self.celery.task)
 
         l = lambda x: x
-        l.func_name = 'test'
+        l.__name__ = 'test'
         r.node(['test'])(l)
 
         self.assertTrue(

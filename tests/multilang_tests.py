@@ -30,7 +30,7 @@ class ShellNodeTests(TestCase):
         obj = {'x': 1, 'y': 2}
         packed = msgpack.packb(obj)
 
-        self.assertEqual(
+        self.assertItemsEqual(
             obj,
             self.raw.deserialize(packed)
         )
