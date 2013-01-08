@@ -1,10 +1,6 @@
 'tests for multilang'
+import json
 from unittest import TestCase
-
-try:
-    import msgpack
-except ImportError:
-    import msgpack_pure as msgpack
 
 from emit.router import Router
 from emit.multilang import ShellNode
@@ -26,9 +22,9 @@ class ShellNodeTests(TestCase):
         self.node = Router().node(['n'])(self.raw)
 
     def test_deserialization(self):
-        'serialization takes a Message and outputs msgpack'
+        'serialization takes a Message and outputs json'
         obj = {'x': 1, 'y': 2}
-        packed = msgpack.packb(obj)
+        packed = json.dumps(obj)
 
         self.assertItemsEqual(
             obj,

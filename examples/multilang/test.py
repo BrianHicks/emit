@@ -1,11 +1,8 @@
 'test for multilang'
 import sys
-try:
-    import msgpack
-except ImportError:
-    import msgpack_pure as msgpack
+import json
 
-message = msgpack.unpackb(sys.stdin.read())
+message = json.loads(sys.stdin.read())
 
 for i in range(message['count']):
-    sys.stdout.write(msgpack.packb(i) + '\n')
+    sys.stdout.write(json.dumps(i) + '\n')

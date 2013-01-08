@@ -1,9 +1,6 @@
 'class to communicate with other languages over stdin/out'
+import json
 import logging
-try:
-    import msgpack
-except ImportError:
-    import msgpack_pure as msgpack
 import shlex
 from subprocess import Popen, PIPE
 
@@ -38,7 +35,7 @@ class ShellNode(object):
             cwd=self.get_cwd()
         )
 
-        stdout, stderr = process.communicate(msg.as_msgpack())
+        stdout, stderr = process.communicate(msg.as_json())
 
         if stderr != '':
             self.logger.error('Error calling "%s": %s', self.command, stderr)
@@ -64,4 +61,4 @@ class ShellNode(object):
     def deserialize(self, msg):
         'deserialize output to a Python object'
         self.logger.debug('deserializing %s', msg)
-        return msgpack.unpackb(msg)
+        return json.loads(msg)
