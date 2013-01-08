@@ -10,6 +10,11 @@ Emit is a library that hooks into Celery (or just local memory) to provide
 subscriptions and notifications for your functions. It makes stream processing a
 whole lot easier.
 
+Supported Pythons:
+
+* CPython 2.7.2
+* PyPy 1.9
+
 Contents:
 
 .. toctree::
