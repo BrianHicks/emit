@@ -3,7 +3,7 @@ import logging
 try:
     import msgpack
 except ImportError:
-    import msgpack_pure
+    import msgpack_pure as msgpack
 import shlex
 from subprocess import Popen, PIPE
 
