@@ -9,9 +9,9 @@ from .message import Message, NoResult
 
 class Router(object):
     'A router object. Holds routes and references to functions for dispatch'
-    def __init__(self,
-                initial_routes=None, celery_task=None, message_class=None,
-                node_modules=None, node_package=None):
+    def __init__(self, initial_routes=None, initial_fields=None,
+                initial_functions=None, celery_task=None,
+                message_class=None, node_modules=None, node_package=None):
         '''\
         Create a new router object. All parameters are optional.
 
@@ -32,12 +32,15 @@ class Router(object):
         :returns: None
         '''
         self.routes = initial_routes or {}
-        self.fields = {}
-        self.functions = {}
+        self.fields = initial_fields or {}
+        self.functions = initial_functions or {}
+
         self.celery_task = celery_task
+
         self.message_class = message_class or Message
 
-        # manage imported packages, lazily importing before the first route
+        # manage imported packages, lazily importing before the first message
+        # is routed.
         self.resolved_node_modules = False
         self.node_modules = node_modules or []
         self.node_package = node_package
