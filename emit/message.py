@@ -1,8 +1,5 @@
 'message wrapper to be passed to functions'
-try:
-    import msgpack
-except ImportError:
-    import msgpack_pure as msgpack
+import json
 
 class Message(object):
     'Convenient wrapper around a dictionary to provide attribute access'
@@ -35,13 +32,13 @@ class Message(object):
         '''
         return self.bundle
 
-    def as_msgpack(self):
+    def as_json(self):
         '''
-        representation of this message as a msgpack object
+        representation of this message as a json object
 
         :returns: str
         '''
-        return msgpack.packb(self.as_dict())
+        return json.dumps(self.as_dict())
 
 
 class NoResult(object):

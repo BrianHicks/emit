@@ -1,10 +1,6 @@
 'tests for message'
+import json
 from unittest import TestCase
-
-try:
-    import msgpack
-except ImportError:
-    import msgpack_pure as msgpack
 
 from emit.message import Message
 
@@ -30,12 +26,12 @@ class MessageTests(TestCase):
             x.as_dict()
         )
 
-    def test_as_msgpack(self):
+    def test_as_json(self):
         'returns string from .as_msgpack'
         d = {'x': 1, 'y': 2}
         x = Message(**d)
 
         self.assertEqual(
-            msgpack.packb(d),
-            x.as_msgpack()
+            json.dumps(d),
+            x.as_json()
         )
