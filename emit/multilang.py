@@ -35,7 +35,11 @@ class ShellNode(object):
             cwd=self.get_cwd()
         )
 
-        stdout, stderr = process.communicate(bytes(msg.as_json(), 'UTF-8'))
+        msg_json = msg.as_json()
+        try:
+            stdout, stderr = process.communicate(bytes(msg_json, 'UTF-8'))
+        except TypeError: # python 2.7.2
+            stdout, stderr = process.communicate(msg_json)
 
         if stderr:
             self.logger.error('Error calling "%s": %s', self.command, stderr)
