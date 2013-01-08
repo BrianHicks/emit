@@ -1,5 +1,5 @@
 nose==1.2.1
-msgpack-python==0.2.4
+msgpack-pure==0.2.4
 
 # testing celery example
 celery==3.0.12
