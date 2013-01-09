@@ -1,0 +1,22 @@
+#!/usr/bin/env python
+from __future__ import print_function
+import importlib
+import sys
+
+from emit.graphviz import make_digraph
+
+def get_router(path):
+    'get a router from a string'
+    module_name, name = path.rsplit('.', 1)
+    module = importlib.import_module(module_name, '.')
+
+    router = getattr(module, name)
+    router.resolve_node_modules()
+
+    return router
+
+
+if __name__ == '__main__':
+    sys.path.append('.')
+    router = get_router(sys.argv[-1])
+    print(make_digraph(router))
