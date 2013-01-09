@@ -50,7 +50,7 @@ Next, we define a function to split apart a document on spaces to get words:
 
 .. literalinclude:: ../examples/simple/graph.py
    :language: python
-   :lines: 7-11
+   :lines: 10-14
 
 ``Router`` provides a decorator. The first argument is the fields that the
 decorated function returns. These are wrapped in a message and passed around
@@ -70,7 +70,7 @@ words, so let's count them now:
 
 .. literalinclude:: ../examples/simple/graph.py
    :language: python
-   :lines: 13-21
+   :lines: 16-24
 
 There's a little less going on in this function. We just update a ``Counter``
 builtin, and then return the word and the count to be passed down the graph. In
@@ -86,7 +86,7 @@ graph:
 
 .. literalinclude:: ../examples/simple/graph.py
    :language: python
-   :lines: 23-24
+   :lines: 27
 
 Calling this graph is easy, since we defined a function as an entry point. You
 can call any of the functions (or the router itself) by using keyword arguments
