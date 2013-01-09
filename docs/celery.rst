@@ -4,6 +4,10 @@ Using Celery to Distribute Processing
 Emit makes it simple to use celery to distribute realtime processing across
 many worker nodes. To demonstrate this, we'll be scaling our quickstart example 
 
+We'll be making, in essence, this graph:
+
+.. image:: ../examples/celery/graph.png
+
 Setting up Celery
 -----------------
 
