@@ -26,6 +26,10 @@ document = 'the words in this document will be counted and emitted by count_word
 router(document=' '.join(random.choice(document) for i in range(20)))
 ```
 
+So how do you get it? Soon, on PyPI. For now:
+
+    pip install -e git+https://github.com/BrianHicks/emit.git#egg=emit
+
 Some Links:
 
  - [Project Documentation][docs]
