@@ -1,8 +1,8 @@
 Command Line Utilities
 ======================
 
-Generating Graph Images
------------------------
+emit_digraph - Generate Graph Images
+------------------------------------
 
 Emit ships with a command-line program to inspect a graph: ``emit_digraph``.
 Use it to generate graphs like this:
