@@ -25,6 +25,7 @@ Contents:
    celery
    multilang
    star-routing
+   command-line-utilities
    api-documentation
    glossary
 
