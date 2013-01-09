@@ -91,3 +91,7 @@ graph:
 Calling this graph is easy, since we defined a function as an entry point. You
 can call any of the functions (or the router itself) by using keyword arguments
 or passing a dictionary.
+
+In the end, data flows through the graph like this:
+
+.. image:: ../examples/simple/graph.png
