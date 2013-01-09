@@ -23,4 +23,8 @@ Next, we'll make a function that publishes to Redis on every message:
 
 Now, when you call ``router(querystring='?a=1&b=2&c=3')``, ``notify_on_emit``
 will publish four messages: three with origin "graph.parse_querystring", and
-one with origin "__entry_point".
+one with origin "__entry_point". The graph ends up looking like the following:
+
+.. image:: ../examples/star/graph.png
+
+It appears to be disconnected, but will route properly.
