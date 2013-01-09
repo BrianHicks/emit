@@ -11,5 +11,6 @@ setup(
     author_email='brian@brianthicks.com',
     license='MIT',
     packages=['emit'],
+    scripts=['emit/bin/emit_digraph'],
     zip_safe=False
 )
