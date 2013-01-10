@@ -246,6 +246,42 @@ class RouterTests(TestCase):
 
         self.assertEqual(0, watcher.call_count)
 
+    def test_add_routes_regex(self):
+        'adding routes with a regular expression route correctly'
+        self.router.add_routes('__entry_point', 'test')
+        self.router.add_routes('.+', 'test2')
+
+        self.assertEqual(
+            {
+                '__entry_point': set(['test']),
+                'test': set(['test2']),
+            },
+            self.router.routes
+        )
+
+    def test_add_routes_before(self):
+        'adding routes after a regex has been added also match'
+        self.router.add_routes('.+', 'test2')
+        self.router.add_routes('__entry_point', 'test')
+
+        self.assertEqual(
+            {
+                '__entry_point': set(['test']),
+                'test': set(['test2']),
+            },
+            self.router.routes
+        )
+
+    def test_unsubscribed_routes_are_added(self):
+        'routes which have no subscribers are still added later'
+        self.router.add_routes('.+', 'test2')
+        self.router.add_routes(None, 'test')
+
+        self.assertEqual(
+            {'test': set(['test2'])},
+            self.router.routes
+        )
+
 
 class CeleryRouterTests(TestCase):
     'tests for using celery to route nodes'
