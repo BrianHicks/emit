@@ -38,7 +38,6 @@ class Router(object):
         '''
         self.routes = initial_routes or {}
         self.names = set()
-        self.entry_points = set()
         self.regexes = {}
 
         self.fields = initial_fields or {}
@@ -235,7 +234,7 @@ class Router(object):
         :param destination: node to route to initially
         :type destination: str
         '''
-        self.entry_points.add(destination)
+        self.routes.setdefault('__entry_point', set()).add(destination)
 
     def register_route(self, origins, destination):
         '''
@@ -297,7 +296,7 @@ class Router(object):
         # do it just in time to route.
         self.resolve_node_modules()
 
-        subs = self.routes.get(origin, set()) | self.entry_points
+        subs = self.routes.get(origin, set())
 
         for destination in subs:
             self.logger.debug('routing "%s" -> "%s"', origin, destination)
