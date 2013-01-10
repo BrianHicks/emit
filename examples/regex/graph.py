@@ -12,7 +12,7 @@ def parse_querystring(msg):
         key, value = part.split('=')
         yield key, value
 
-@router.node(tuple(), '*')
+@router.node(tuple(), '.+')
 def notify_on_emit(msg):
     redis.publish('notify_on_emit.%s' % msg._origin, msg.as_json())
     return NoResult
