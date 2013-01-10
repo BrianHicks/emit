@@ -18,6 +18,7 @@ def get_test_celery():
 def get_named_mock(name):
     m = mock.MagicMock()
     m.__name__ = name
+    m.name = name
     return m
 
 def prefix(name):
@@ -57,27 +58,6 @@ class RouterTests(TestCase):
             ['a', 'b', 'c'],
             self.router.fields[prefix('a')]
         )
-
-    # add_routes
-    def test_creates_new_route(self):
-        'creates a new route from blank routes'
-        self.router.add_routes(['a', 'b'], 'c')
-
-        self.assertEqual(set('c'), self.router.routes['a'])
-        self.assertEqual(set('c'), self.router.routes['b'])
-
-    def test_appends_existing_route(self):
-        'appends a route to an existing route'
-        r = Router({'a': set('b')})
-        r.add_routes(['a'], 'c')
-
-        self.assertEqual(set(['b', 'c']), r.routes['a'])
-
-    def test_converts_origin(self):
-        'converts a single origin to a list'
-        self.router.add_routes('a', 'bc')
-
-        self.assertEqual(set(['bc']), self.router.routes['a'])
 
     # calling
     def test_calling_returns_single(self):
@@ -211,14 +191,6 @@ class RouterTests(TestCase):
 
         self.assertEqual(1, mock_importlib.import_module.call_count)
 
-    def test_star_route(self):
-        'star route is routed after every message'
-        func = get_named_mock('test')
-        self.router.node(['x'], '*')(func)
-
-        self.router()
-        self.assertEqual(1, func.call_count)
-
     def test_no_result_generator(self):
         'a generator returning NoResult should only pass on non-NoResults'
         @self.router.node(['n'])
@@ -246,36 +218,30 @@ class RouterTests(TestCase):
 
         self.assertEqual(0, watcher.call_count)
 
-    def test_add_routes_regex(self):
+    def test_register_route_regex(self):
         'adding routes with a regular expression route correctly'
-        self.router.add_routes('__entry_point', 'test')
-        self.router.add_routes('.+', 'test2')
+        self.router.register_route('__entry_point', 'test')
+        self.router.register_route('.+', 'test2')
 
         self.assertEqual(
-            {
-                '__entry_point': set(['test']),
-                'test': set(['test2']),
-            },
+            {'test': set(['test2'])},
             self.router.routes
         )
 
-    def test_add_routes_before(self):
+    def test_register_route_before(self):
         'adding routes after a regex has been added also match'
-        self.router.add_routes('.+', 'test2')
-        self.router.add_routes('__entry_point', 'test')
+        self.router.register_route('.+', 'test2')
+        self.router.register_route('__entry_point', 'test')
 
         self.assertEqual(
-            {
-                '__entry_point': set(['test']),
-                'test': set(['test2']),
-            },
+            {'test': set(['test2'])},
             self.router.routes
         )
 
     def test_unsubscribed_routes_are_added(self):
         'routes which have no subscribers are still added later'
-        self.router.add_routes('.+', 'test2')
-        self.router.add_routes(None, 'test')
+        self.router.register_route('.+', 'test2')
+        self.router.register_route(None, 'test')
 
         self.assertEqual(
             {'test': set(['test2'])},

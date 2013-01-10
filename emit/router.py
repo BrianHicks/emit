@@ -2,6 +2,7 @@
 from functools import wraps
 import importlib
 import logging
+import re
 from types import GeneratorType
 
 from .message import Message, NoResult
@@ -36,6 +37,10 @@ class Router(object):
         :returns: None
         '''
         self.routes = initial_routes or {}
+        self.names = set()
+        self.entry_points = set()
+        self.regexes = {}
+
         self.fields = initial_fields or {}
         self.functions = initial_functions or {}
 
@@ -216,15 +221,23 @@ class Router(object):
         self.fields[name] = fields
         self.functions[name] = func
 
-        if subscribe_to:
-            self.add_routes(subscribe_to, name)
+        self.register_route(subscribe_to, name)
 
         if entry_point:
-            self.add_routes('__entry_point', name)
+            self.add_entry_point(name)
 
         self.logger.info('registered %s', name)
 
-    def add_routes(self, origins, destination):
+    def add_entry_point(self, destination):
+        '''\
+        Add an entry point
+
+        :param destination: node to route to initially
+        :type destination: str
+        '''
+        self.entry_points.add(destination)
+
+    def register_route(self, origins, destination):
         '''
         Add routes to the routing dictionary
 
@@ -239,13 +252,36 @@ class Router(object):
              'node_b': set(['node_d'])}
 
         '''
+        self.names.add(destination)
+        self.logger.debug('added "%s" to names', destination)
+
+        origins = origins or [] # remove None
         if not isinstance(origins, list):
             origins = [origins]
 
-        for origin in list(origins):
-            self.routes.setdefault(origin, set())
-            self.routes[origin].add(destination)
-            self.logger.info('added route "%s" -> "%s"', origin, destination)
+        self.regexes.setdefault(destination, map(re.compile, origins))
+
+        resolved_origins = set()
+
+        self.regenerate_routes()
+
+    def regenerate_routes(self):
+        'regenerate the routes after a new route is added'
+        for destination, origins in self.regexes.items():
+            resolved = set()
+            for name in self.names:
+                if any(origin.match(name) for origin in origins):
+                    resolved.add(name)
+
+            try:
+                resolved.remove(destination) # to avoid infinite loop
+            except KeyError:
+                pass
+
+            for origin in resolved:
+                self.routes.setdefault(origin, set())
+                self.routes[origin].add(destination)
+                self.logger.info('added route "%s" -> "%s"', origin, destination)
 
     def route(self, origin, message):
         '''\
@@ -261,13 +297,7 @@ class Router(object):
         # do it just in time to route.
         self.resolve_node_modules()
 
-        subs = set()
-        subs |= self.routes.get(origin, set())
-
-        # handle the star route - add all subscribers and then remove the
-        # origin so we don't go into a loop
-        subs |= self.routes.get('*', set())
-        subs -= set([origin])
+        subs = self.routes.get(origin, set()) | self.entry_points
 
         for destination in subs:
             self.logger.debug('routing "%s" -> "%s"', origin, destination)
