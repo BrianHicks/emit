@@ -290,3 +290,16 @@ class CeleryRouterTests(TestCase):
         self.assertTrue(
             isinstance(r.functions[prefix('test')], Task)
         )
+
+    def test_calls_delay(self):
+        'calls delay to route'
+        func = lambda n: n
+        func.name = 'name'
+        self.router.node(tuple(), entry_point=True)(func)
+
+        node = mock.Mock()  # replace node with mock to test call
+        self.router.functions['name'] = node
+
+        self.router(x=1)
+
+        node.delay.assert_called_with(_origin='__entry_point', x=1)
