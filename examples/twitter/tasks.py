@@ -22,3 +22,7 @@ def tally_word(msg):
 @router.node(['message_count'], 'tasks.tweet_text')
 def count_messages(msg):
     return redis.incr('tweet_count', 1)
+
+@router.node(['call_count'], '.+')
+def count_calls(msg):
+    return redis.zincrby('tweet_call_counts', msg._sender, 1)
