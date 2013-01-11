@@ -26,6 +26,7 @@ Contents:
    multilang
    regex-routing
    command-line-utilities
+   logging
    api-documentation
    glossary
 
