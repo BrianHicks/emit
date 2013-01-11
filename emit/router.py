@@ -280,15 +280,12 @@ class Router(object):
     def regenerate_routes(self):
         'regenerate the routes after a new route is added'
         for destination, origins in self.regexes.items():
-            resolved = set()
-            for name in self.names:
-                if any(origin.search(name) for origin in origins):
-                    resolved.add(name)
-
-            try:
-                resolved.remove(destination)  # to avoid infinite loop
-            except KeyError:
-                pass
+            # we want only the names that match the destination regexes.
+            resolved = [
+                name for name in self.names
+                if name is not destination
+                and any(origin.search(name) for origin in origins)
+            ]
 
             ignores = self.ignore_regexes.get(destination, [])
             for origin in resolved:
@@ -308,11 +305,6 @@ class Router(object):
                     self.logger.info('added route "%s" -> "%s"', origin, destination)
 
                 destinations.add(destination)
-
-        # add a little cleanup to keep empty routes empty
-        for origin, destinations in list(self.routes.items()):
-            if len(destinations) == 0:
-                del self.routes[origin]
 
     def route(self, origin, message):
         '''\
