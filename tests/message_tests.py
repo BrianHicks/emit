@@ -15,8 +15,12 @@ class MessageTests(TestCase):
     def test_dir(self):
         'dir includes attributes'
         x = Message(x=1, y=2)
-        self.assertIn('x', dir(x))
-        self.assertIn('y', dir(x))
+        try:
+            self.assertIn('x', dir(x))
+            self.assertIn('y', dir(x))
+        except AttributeError:  # python 2.6
+            self.assertTrue('x' in dir(x), '"x" not in dir(x)')
+            self.assertTrue('y' in dir(x), '"y" not in dir(x)')
 
     def test_as_dict(self):
         'returns dict from .as_dict'

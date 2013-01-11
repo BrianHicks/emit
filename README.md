@@ -39,7 +39,8 @@ Some Links:
 
 Supported Pythons:
 
- - CPython 2.7.2
+ - CPython 2.6
+ - CPython 2.7
  - CPython 3.2
  - PyPy 1.9
 
