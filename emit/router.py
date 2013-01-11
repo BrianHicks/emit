@@ -102,7 +102,6 @@ class Router(object):
 
         return wrapped
 
-
     def node(self, fields, subscribe_to=None, entry_point=False, ignore=None,
              **wrapper_options):
         '''\
@@ -249,7 +248,7 @@ class Router(object):
         self.names.add(destination)
         self.logger.debug('added "%s" to names', destination)
 
-        origins = origins or [] # remove None
+        origins = origins or []  # remove None
         if not isinstance(origins, list):
             origins = [origins]
 
@@ -287,7 +286,7 @@ class Router(object):
                     resolved.add(name)
 
             try:
-                resolved.remove(destination) # to avoid infinite loop
+                resolved.remove(destination)  # to avoid infinite loop
             except KeyError:
                 pass
 
