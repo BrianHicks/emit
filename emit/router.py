@@ -258,7 +258,7 @@ class Router(object):
         if not isinstance(origins, list):
             origins = [origins]
 
-        self.regexes.setdefault(destination, map(re.compile, origins))
+        self.regexes.setdefault(destination, [re.compile(origin) for origin in origins])
 
         resolved_origins = set()
 
