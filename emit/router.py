@@ -10,14 +10,10 @@ from .message import Message, NoResult
 
 class Router(object):
     'A router object. Holds routes and references to functions for dispatch'
-    def __init__(self, celery_task=None, message_class=None,
-                 node_modules=None, node_package=None):
+    def __init__(self, message_class=None, node_modules=None, node_package=None):
         '''\
         Create a new router object. All parameters are optional.
 
-        :param celery_task: celery task to apply to all nodes (can be
-                            overridden in :py:meth:`Router.node`.)
-        :type celery_task: A celery task decorator, in any form
         :param message_class: wrapper class for messages passed to nodes
         :type message_class: :py:class:`emit.message.Message` or subclass
         :param node_modules: a list of modules that contain nodes
@@ -36,8 +32,6 @@ class Router(object):
 
         self.fields = {}
         self.functions = {}
-
-        self.celery_task = celery_task
 
         self.message_class = message_class or Message
 
@@ -109,8 +103,8 @@ class Router(object):
         return wrapped
 
 
-    def node(self, fields, subscribe_to=None, celery_task=None, entry_point=False,
-             ignore=None):
+    def node(self, fields, subscribe_to=None, entry_point=False, ignore=None,
+             **wrapper_options):
         '''\
         Decorate a function to make it a node.
 
@@ -130,13 +124,17 @@ class Router(object):
                        expressions.) Useful for ignoring specific functions in
                        a broad regex.
         :type ignore: :py:class:`str` or iterable of :py:class:`str`
-        :param celery_task: celery task to apply to only this node. Use this to
-                            add custom celery attributes (like rate limiting)
-        :type celery_task: any celery task type
         :param entry_point: Set to ``True`` to mark this as an entry point -
                             that is, this function will be called when the
                             router is called directly.
         :type entry_point: :py:class:`bool`
+
+        In addition to all of the above, you can define a ``wrap_node``
+        function on a subclass of Router, which will need to receive node and
+        an options dictionary. Any extra options passed to node will be passed
+        down to the options dictionary. See
+        :py:class:`emit.router.CeleryRouter.wrap_node` as an example.
+
         :returns: decorated and wrapped function, or decorator if called directly
         '''
         def outer(func):
@@ -145,14 +143,9 @@ class Router(object):
             self.logger.debug('wrapping %s', func)
             wrapped = self.wrap_as_node(func)
 
-            # celery registers tasks by decorating them, and so do we, so the
-            # user can pass a celery task and we'll wrap our code with theirs
-            # in a nice package celery can execute.
-            if celery_task or self.celery_task:
-                if celery_task:
-                    wrapped = celery_task(wrapped)
-                else:
-                    wrapped = self.celery_task(wrapped)
+            if hasattr(self, 'wrap_node'):
+                self.debug('wrapping node "%s" in custom wrapper', wrapped)
+                wrapped = self.wrap_node(wrapped, wrapper_options)
 
             # register the task in the graph
             name = self.get_name(func)
@@ -349,18 +342,10 @@ class Router(object):
         :type destination: :py:class:`str`
         :param message: message to dispatch
         :type message: :py:class:`emit.message.Message` or subclass
-
-        Will delay the message (using celery) instead of calling it directly if
-        possible.
         '''
         func = self.functions[destination]
-
-        if hasattr(func, 'delay'):
-            self.logger.debug('delaying %r', func)
-            return func.delay(_origin=origin, **message)
-        else:
-            self.logger.debug('calling %r directly', func)
-            return func(_origin=origin, **message)
+        self.logger.debug('calling %r directly', func)
+        return func(_origin=origin, **message)
 
     def wrap_result(self, name, result):
         '''
@@ -384,14 +369,56 @@ class Router(object):
 
         :param func: function to get the name of
         :type func: callable
-
-        Gets celery assigned name, if present (IE ``name`` instead of
-        ``func_name``)
         '''
-        if hasattr(func, 'name'):  # celery-decorated function
-            return func.name
-
         return '%s.%s' % (
             func.__module__,
             func.__name__
         )
+
+
+class CeleryRouter(Router):
+    'Router specifically for Celery routing'
+    def __init__(self, celery_task, *args, **kwargs):
+        '''\
+        Specifically route when celery is needed
+
+        :param celery_task: celery task to apply to all nodes (can be
+                            overridden in :py:meth:`Router.node`.)
+        :type celery_task: A celery task decorator, in any form
+        '''
+        super(self, CeleryRouter).__init__(*args, **kwargs)
+        self.celery_task = celery_task
+        self.logger.debug('Initialized Celery Router')
+
+    def get_name(self, func):
+        '''
+        Get the name Celery knows this task by
+
+        :param func: function to get the celery-assigned name of
+        :type func: callable
+        '''
+        return func.name
+
+    def dispatch(self, origin, destination, message):
+        '''\
+        enqueue a message with Celery
+
+        :param destination: destination to dispatch to
+        :type destination: :py:class:`str`
+        :param message: message to dispatch
+        :type message: :py:class:`emit.message.Message` or subclass
+        '''
+        func = self.functions[destination]
+        self.logger.debug('delaying %r', func)
+        return func.delay(_origin=origin, **message)
+
+    def wrap_node(self, node, options):
+        '''\
+        celery registers tasks by decorating them, and so do we, so the user
+        can pass a celery task and we'll wrap our code with theirs in a nice
+        package celery can execute.
+        '''
+        if 'celery_task' in options:
+            return options['celery_task'](node)
+
+        return self.celery_task(node)
