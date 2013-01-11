@@ -10,7 +10,7 @@ Installing
 Eventually, you'll be able to install via `pip`. However, while the library is
 under initial development you'll need to install via git::
 
-    pip install -e git+git@github.com:BrianHicks/emit.git#egg=emit
+    pip install emit
 
 Quickstart
 ----------
