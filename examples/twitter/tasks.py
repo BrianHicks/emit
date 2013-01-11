@@ -25,4 +25,4 @@ def count_messages(msg):
 
 @router.node(('call_count',), '.+')
 def count_calls(msg):
-    return redis.zincrby('tweet_call_counts', msg._sender, 1)
+    return redis.zincrby('tweet_call_counts', msg._origin, 1)
