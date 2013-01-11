@@ -262,7 +262,7 @@ class RouterTests(TestCase):
         self.router.register_ignore('test2', 'test3')
 
         self.assertEqual(
-            {'test1': set(['test3'])},
+            {'test1': set(['test3']), 'test2': set()},
             self.router.routes
         )
 
