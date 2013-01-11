@@ -131,6 +131,10 @@ class Router(object):
         :param subscribe_to: functions in the graph to subscribe to. These
                              indicators can be regular expressions.
         :type subscribe_to: :py:class:`str` or iterable of :py:class:`str`
+        :param ignore: functions in the graph to ignore (also uses regular
+                       expressions.) Useful for ignoring specific functions in
+                       a broad regex.
+        :type ignore: :py:class:`str` or iterable of :py:class:`str`
         :param celery_task: celery task to apply to only this node. Use this to
                             add custom celery attributes (like rate limiting)
         :type celery_task: any celery task type
