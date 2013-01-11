@@ -5,12 +5,14 @@ import sys
 
 import emit
 
+
 # add a few commands for measurement
 def cc():
     proc = Popen(['radon', 'cc'] + sys.argv[1:], stdout=PIPE)
     stdout, _ = proc.communicate()
     sys.stdout.write(stdout.decode('utf-8'))
     return 1 if stdout else 0
+
 
 def mi():
     proc = Popen(['radon', 'mi'] + sys.argv[1:], stdout=PIPE)
