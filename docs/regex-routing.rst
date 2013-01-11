@@ -32,3 +32,6 @@ with origin "graph.count_keyval", and one with origin "__entry_point". The
 graph ends up looking like this:
 
 .. image:: ../examples/regex/graph.png
+
+You can also specify ``ignores`` in ``Router.node``, which can cut a little fat
+out of an otherwise greedy regex.
