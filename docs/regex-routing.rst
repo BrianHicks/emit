@@ -12,19 +12,19 @@ case, we're going to naively parse a HTTP querystring.
 
 .. literalinclude:: ../examples/regex/graph.py
    :language: python
-   :lines: 11-16
+   :lines: 13-18
 
 Now we're going to count keys and values:
 
 .. literalinclude:: ../examples/regex/graph.py
    :language: python
-   :lines: 18-21
+   :lines: 21-24
 
 Next, we'll make a function that publishes to Redis on every message:
 
 .. literalinclude:: ../examples/regex/graph.py
    :language: python
-   :lines: 23-26
+   :lines: 27-30
 
 Now, when you call ``router(querystring='?a=1&b=2&c=3')``, ``notify_on_emit``
 will publish seven messages: three with origin "graph.parse_querystring", three
