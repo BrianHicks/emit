@@ -278,9 +278,12 @@ class Router(object):
                 pass
 
             for origin in resolved:
-                self.routes.setdefault(origin, set())
-                self.routes[origin].add(destination)
-                self.logger.info('added route "%s" -> "%s"', origin, destination)
+                destinations = self.routes.setdefault(origin, set())
+
+                if destination not in destinations:
+                    self.logger.info('added route "%s" -> "%s"', origin, destination)
+
+                destinations.add(destination)
 
     def route(self, origin, message):
         '''\
