@@ -144,7 +144,7 @@ class Router(object):
             wrapped = self.wrap_as_node(func)
 
             if hasattr(self, 'wrap_node'):
-                self.debug('wrapping node "%s" in custom wrapper', wrapped)
+                self.logger.debug('wrapping node "%s" in custom wrapper', wrapped)
                 wrapped = self.wrap_node(wrapped, wrapper_options)
 
             # register the task in the graph
@@ -370,6 +370,9 @@ class Router(object):
         :param func: function to get the name of
         :type func: callable
         '''
+        if hasattr(func, 'name'):
+            return func.name
+
         return '%s.%s' % (
             func.__module__,
             func.__name__
@@ -386,18 +389,9 @@ class CeleryRouter(Router):
                             overridden in :py:meth:`Router.node`.)
         :type celery_task: A celery task decorator, in any form
         '''
-        super(self, CeleryRouter).__init__(*args, **kwargs)
+        super(CeleryRouter, self).__init__(*args, **kwargs)
         self.celery_task = celery_task
         self.logger.debug('Initialized Celery Router')
-
-    def get_name(self, func):
-        '''
-        Get the name Celery knows this task by
-
-        :param func: function to get the celery-assigned name of
-        :type func: callable
-        '''
-        return func.name
 
     def dispatch(self, origin, destination, message):
         '''\
