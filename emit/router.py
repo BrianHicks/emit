@@ -269,7 +269,7 @@ class Router(object):
         for destination, origins in self.regexes.items():
             resolved = set()
             for name in self.names:
-                if any(origin.match(name) for origin in origins):
+                if any(origin.search(name) for origin in origins):
                     resolved.add(name)
 
             try:
