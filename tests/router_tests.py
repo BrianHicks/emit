@@ -156,10 +156,13 @@ class RouterTests(TestCase):
         def test(msg):
             raise RuntimeError('test was called')
 
-        self.assertRaisesRegexp(
-            RuntimeError, 'test was called',
-            self.router, x=1
-        )
+        try:
+            self.assertRaisesRegexp(
+                RuntimeError, 'test was called',
+                self.router, x=1
+            )
+        except AttributeError:  # python 2.6
+           self.assertRaises(RuntimeError, self.router, x=1)
 
 
     @mock.patch('emit.router.importlib')
