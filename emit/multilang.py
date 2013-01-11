@@ -16,7 +16,7 @@ class ShellNode(object):
     similar output: msgpack messages separated by a newline.
     '''
     def __init__(self):
-        self.logger = logging.getLogger('%s.%s' %(
+        self.logger = logging.getLogger('%s.%s' % (
             self.__class__.__module__,
             self.__class__.__name__
         ))
@@ -38,7 +38,7 @@ class ShellNode(object):
         msg_json = msg.as_json()
         try:
             stdout, stderr = process.communicate(bytes(msg_json, 'UTF-8'))
-        except TypeError: # python 2.7.2
+        except TypeError:  # python 2.7.2
             stdout, stderr = process.communicate(msg_json)
 
         if stderr:
