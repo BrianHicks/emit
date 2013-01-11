@@ -5,6 +5,7 @@ from unittest import TestCase
 from emit.router import Router
 from emit.multilang import ShellNode
 
+
 class SampleNode(ShellNode):
     command = 'python test.py'
     cwd = 'examples/multilang'
