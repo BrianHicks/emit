@@ -289,7 +289,7 @@ class Router(object):
         if not isinstance(origins, list):
             origins = [origins]
 
-        self.ignore_regexes.setdefault(destination, map(re.compile, origins))
+        self.ignore_regexes.setdefault(destination, [re.compile(origin) for origin in origins])
         self.regenerate_routes()
 
     def regenerate_routes(self):
@@ -309,7 +309,7 @@ class Router(object):
             for origin in resolved:
                 destinations = self.routes.setdefault(origin, set())
 
-                if any(ignore.match(origin) for ignore in ignores):
+                if any(ignore.search(origin) for ignore in ignores):
                     self.logger.info('ignoring route "%s" -> "%s"', origin, destination)
                     try:
                         destinations.remove(destination)
@@ -324,7 +324,8 @@ class Router(object):
 
                 destinations.add(destination)
 
-        for origin, destinations in self.routes.items():
+        # add a little cleanup to keep empty routes empty
+        for origin, destinations in list(self.routes.items()):
             if len(destinations) == 0:
                 del self.routes[origin]
 
