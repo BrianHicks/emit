@@ -7,7 +7,7 @@ Router
 .. module:: emit.router
 
 .. autoclass:: Router
-   :members: add_routes, dispatch, get_message_from_call, get_name, register, route, wrap_result
+   :members: dispatch, get_message_from_call, get_name, regenerate_routes, register, register_ignore, register_route, route, wrap_result
 
    .. automethod:: Router.__init__
 
@@ -53,6 +53,9 @@ Router
 
       Each message in the tuple will be passed on individually in the graph.
 
+.. autoclass:: CeleryRouter
+   :members:
+   :special-members:
 
 Message
 -------
