@@ -248,6 +248,20 @@ class RouterTests(TestCase):
             self.router.routes
         )
 
+    def test_ignored_routes(self):
+        'ignored routes are not added'
+        # add two base routes
+        self.router.register_route(None, 'test1')
+        self.router.register_route(None, 'test2')
+
+        # add ignore route
+        self.router.register_route(['test1', 'test2'], 'test3')
+        self.router.register_ignore('test2', 'test3')
+
+        self.assertEqual(
+            {'test1': set(['test3'])},
+            self.router.routes
+        )
 
 class CeleryRouterTests(TestCase):
     'tests for using celery to route nodes'

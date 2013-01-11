@@ -39,6 +39,7 @@ class Router(object):
         self.routes = initial_routes or {}
         self.names = set()
         self.regexes = {}
+        self.ignore_regexes = {}
 
         self.fields = initial_fields or {}
         self.functions = initial_functions or {}
@@ -115,7 +116,8 @@ class Router(object):
         return wrapped
 
 
-    def node(self, fields, subscribe_to=None, celery_task=None, entry_point=False):
+    def node(self, fields, subscribe_to=None, celery_task=None, entry_point=False,
+             ignore=None):
         '''\
         Decorate a function to make it a node.
 
@@ -131,6 +133,10 @@ class Router(object):
         :param subscribe_to: functions in the graph to subscribe to. These
                              indicators can be regular expressions.
         :type subscribe_to: :py:class:`str` or iterable of :py:class:`str`
+        :param ignore: functions in the graph to ignore (also uses regular
+                       expressions.) Useful for ignoring specific functions in
+                       a broad regex.
+        :type ignore: :py:class:`str` or iterable of :py:class:`str`
         :param celery_task: celery task to apply to only this node. Use this to
                             add custom celery attributes (like rate limiting)
         :type celery_task: any celery task type
@@ -158,7 +164,7 @@ class Router(object):
             # register the task in the graph
             name = self.get_name(func)
             self.register(
-                name, wrapped, fields, subscribe_to, entry_point
+                name, wrapped, fields, subscribe_to, entry_point, ignore
             )
 
             return wrapped
@@ -205,7 +211,7 @@ class Router(object):
 
         return self.message_class(result)
 
-    def register(self, name, func, fields, subscribe_to, entry_point):
+    def register(self, name, func, fields, subscribe_to, entry_point, ignore):
         '''
         Register a named function in the graph
 
@@ -221,6 +227,9 @@ class Router(object):
         self.functions[name] = func
 
         self.register_route(subscribe_to, name)
+
+        if ignore:
+            self.register_ignore(ingore, name)
 
         if entry_point:
             self.add_entry_point(name)
@@ -241,7 +250,7 @@ class Router(object):
         Add routes to the routing dictionary
 
         :param origins: a number of origins to register
-        :type origins: :py:class:`str` or iterable of :py:class:`str`
+        :type origins: :py:class:`str` or iterable of :py:class:`str` or None
         :param destination: where the origins should point to
         :type destination: :py:class:`str`
 
@@ -260,8 +269,27 @@ class Router(object):
 
         self.regexes.setdefault(destination, map(re.compile, origins))
 
-        resolved_origins = set()
+        self.regenerate_routes()
 
+    def register_ignore(self, origins, destination):
+        '''
+        Add routes to the ignore dictionary
+
+        :param origins: a number of origins to register
+        :type origins: :py:class:`str` or iterable of :py:class:`str`
+        :param destination: where the origins should point to
+        :type destination: :py:class:`str`
+
+        Ignore dictionary takes the following form::
+
+            {'node_a': set(['node_b', 'node_c']),
+             'node_b': set(['node_d'])}
+
+        '''
+        if not isinstance(origins, list):
+            origins = [origins]
+
+        self.ignore_regexes.setdefault(destination, map(re.compile, origins))
         self.regenerate_routes()
 
     def regenerate_routes(self):
@@ -277,13 +305,28 @@ class Router(object):
             except KeyError:
                 pass
 
+            ignores = self.ignore_regexes.get(destination, [])
             for origin in resolved:
                 destinations = self.routes.setdefault(origin, set())
+
+                if any(ignore.match(origin) for ignore in ignores):
+                    self.logger.info('ignoring route "%s" -> "%s"', origin, destination)
+                    try:
+                        destinations.remove(destination)
+                        self.logger.debug('removed "%s" -> "%s"', origin, destination)
+                    except KeyError:
+                        pass
+
+                    continue
 
                 if destination not in destinations:
                     self.logger.info('added route "%s" -> "%s"', origin, destination)
 
                 destinations.add(destination)
+
+        for origin, destinations in self.routes.items():
+            if len(destinations) == 0:
+                del self.routes[origin]
 
     def route(self, origin, message):
         '''\
