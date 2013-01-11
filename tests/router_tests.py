@@ -5,7 +5,7 @@ from unittest import TestCase
 from celery import Celery, Task
 import mock
 
-from emit.router import Router
+from emit.router import Router, CeleryRouter
 from emit.message import Message, NoResult
 
 def get_test_celery():
@@ -267,7 +267,7 @@ class CeleryRouterTests(TestCase):
     'tests for using celery to route nodes'
     def setUp(self):
         self.celery = get_test_celery()
-        self.router = Router()
+        self.router = CeleryRouter(self.celery.task)
 
     def test_registers_as_task(self):
         'registers the function as a task'
@@ -281,7 +281,7 @@ class CeleryRouterTests(TestCase):
 
     def test_adds_when_initialized(self):
         'if router is passed a celery task when initialized it wraps with it'
-        r = Router(celery_task=self.celery.task)
+        r = CeleryRouter(celery_task=self.celery.task)
 
         l = lambda x: x
         l.__name__ = 'test'
