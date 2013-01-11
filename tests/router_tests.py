@@ -8,6 +8,7 @@ import mock
 from emit.router import Router, CeleryRouter
 from emit.message import Message, NoResult
 
+
 def get_test_celery():
     celery = Celery()
     celery.conf.update(
@@ -15,11 +16,13 @@ def get_test_celery():
     )
     return celery
 
+
 def get_named_mock(name):
     m = mock.MagicMock()
     m.__name__ = name
     m.name = name
     return m
+
 
 def prefix(name):
     return '%s.%s' % (__name__, name)
@@ -92,10 +95,10 @@ class RouterTests(TestCase):
         'calling a function will route to subscribed functions'
         n = 5
 
-        squares = [i*i for i in range(n)]
+        squares = [i * i for i in range(n)]
         returned_squares = []
 
-        doubles = [i*2 for i in range(n)]
+        doubles = [i * 2 for i in range(n)]
         returned_doubles = []
 
         @self.router.node(['i'])
@@ -162,8 +165,7 @@ class RouterTests(TestCase):
                 self.router, x=1
             )
         except AttributeError:  # python 2.6
-           self.assertRaises(RuntimeError, self.router, x=1)
-
+            self.assertRaises(RuntimeError, self.router, x=1)
 
     @mock.patch('emit.router.importlib')
     def test_registers_node_modules(self, mock_importlib):
@@ -265,6 +267,7 @@ class RouterTests(TestCase):
             {'test1': set(['test3']), 'test2': set()},
             self.router.routes
         )
+
 
 class CeleryRouterTests(TestCase):
     'tests for using celery to route nodes'

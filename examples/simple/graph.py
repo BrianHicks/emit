@@ -5,8 +5,10 @@ import sys
 
 router = Router()
 
+
 def prefix(name):
     return '%s.%s' % (__name__, name)
+
 
 @router.node(('word',), entry_point=True)
 def words(msg):
@@ -14,7 +16,10 @@ def words(msg):
     for word in msg.document.strip().split(' '):
         yield word
 
+
 WORDS = Counter()
+
+
 @router.node(('word', 'count'), prefix('words'))
 def count_word(msg):
     print('got word (%s)' % msg.word)

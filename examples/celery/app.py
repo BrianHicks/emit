@@ -9,7 +9,7 @@ app = Celery(
     broker='redis://'
 )
 app.conf.update(
-    CELERY_IMPORTS = ('tasks',)
+    CELERY_IMPORTS=('tasks',)
 )
 
 router = CeleryRouter(celery_task=app.task, node_modules=['tasks'])
