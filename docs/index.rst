@@ -24,7 +24,7 @@ Contents:
    getting-started
    celery
    multilang
-   star-routing
+   regex-routing
    command-line-utilities
    api-documentation
    glossary
