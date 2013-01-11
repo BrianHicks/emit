@@ -245,7 +245,7 @@ class Router(object):
         Add routes to the routing dictionary
 
         :param origins: a number of origins to register
-        :type origins: :py:class:`str` or iterable of :py:class:`str`
+        :type origins: :py:class:`str` or iterable of :py:class:`str` or None
         :param destination: where the origins should point to
         :type destination: :py:class:`str`
 
@@ -263,8 +263,6 @@ class Router(object):
             origins = [origins]
 
         self.regexes.setdefault(destination, map(re.compile, origins))
-
-        resolved_origins = set()
 
         self.regenerate_routes()
 
