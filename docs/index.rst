@@ -29,6 +29,7 @@ Contents:
    logging
    api-documentation
    glossary
+   changelog
 
 
 Indices and tables
