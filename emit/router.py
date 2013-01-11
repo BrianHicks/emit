@@ -10,18 +10,11 @@ from .message import Message, NoResult
 
 class Router(object):
     'A router object. Holds routes and references to functions for dispatch'
-    def __init__(self, initial_routes=None, initial_fields=None,
-                initial_functions=None, celery_task=None,
-                message_class=None, node_modules=None, node_package=None):
+    def __init__(self, celery_task=None, message_class=None,
+                 node_modules=None, node_package=None):
         '''\
         Create a new router object. All parameters are optional.
 
-        :param initial_routes: custom routes to initiate router with
-        :type initial_routes: dict
-        :param initial_fields: custom fields to wrap output in
-        :type initial_fields: dict
-        :param initial_functions: named functions to call
-        :type initial_functions: dict
         :param celery_task: celery task to apply to all nodes (can be
                             overridden in :py:meth:`Router.node`.)
         :type celery_task: A celery task decorator, in any form
@@ -36,13 +29,13 @@ class Router(object):
         :exceptions: None
         :returns: None
         '''
-        self.routes = initial_routes or {}
+        self.routes = {}
         self.names = set()
         self.regexes = {}
         self.ignore_regexes = {}
 
-        self.fields = initial_fields or {}
-        self.functions = initial_functions or {}
+        self.fields = {}
+        self.functions = {}
 
         self.celery_task = celery_task
 
