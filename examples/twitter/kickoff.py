@@ -11,5 +11,5 @@ twitter = requests.get(
 )
 
 for line in twitter.iter_lines():
-    if line: # filter out keep-alive lines
+    if line:  # filter out keep-alive lines
         router(response=json.loads(line))
