@@ -12,7 +12,7 @@ case, we're going to naively parse a HTTP querystring.
 
 .. literalinclude:: ../examples/regex/graph.py
    :language: python
-   :lines: 8-13
+   :lines: 11-16
 
 Now we're going to count keys and values:
 
