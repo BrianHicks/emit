@@ -5,8 +5,9 @@ from unittest import TestCase
 from celery import Celery, Task
 import mock
 
-from emit.router import Router
+from emit.router import Router, CeleryRouter
 from emit.message import Message, NoResult
+
 
 def get_test_celery():
     celery = Celery()
@@ -15,11 +16,13 @@ def get_test_celery():
     )
     return celery
 
+
 def get_named_mock(name):
     m = mock.MagicMock()
     m.__name__ = name
     m.name = name
     return m
+
 
 def prefix(name):
     return '%s.%s' % (__name__, name)
@@ -92,10 +95,10 @@ class RouterTests(TestCase):
         'calling a function will route to subscribed functions'
         n = 5
 
-        squares = [i*i for i in range(n)]
+        squares = [i * i for i in range(n)]
         returned_squares = []
 
-        doubles = [i*2 for i in range(n)]
+        doubles = [i * 2 for i in range(n)]
         returned_doubles = []
 
         @self.router.node(['i'])
@@ -156,11 +159,13 @@ class RouterTests(TestCase):
         def test(msg):
             raise RuntimeError('test was called')
 
-        self.assertRaisesRegexp(
-            RuntimeError, 'test was called',
-            self.router, x=1
-        )
-
+        try:
+            self.assertRaisesRegexp(
+                RuntimeError, 'test was called',
+                self.router, x=1
+            )
+        except AttributeError:  # python 2.6
+            self.assertRaises(RuntimeError, self.router, x=1)
 
     @mock.patch('emit.router.importlib')
     def test_registers_node_modules(self, mock_importlib):
@@ -248,12 +253,27 @@ class RouterTests(TestCase):
             self.router.routes
         )
 
+    def test_ignored_routes(self):
+        'ignored routes are not added'
+        # add two base routes
+        self.router.register_route(None, 'test1')
+        self.router.register_route(None, 'test2')
+
+        # add ignore route
+        self.router.register_route(['test1', 'test2'], 'test3')
+        self.router.register_ignore('test2', 'test3')
+
+        self.assertEqual(
+            {'test1': set(['test3']), 'test2': set()},
+            self.router.routes
+        )
+
 
 class CeleryRouterTests(TestCase):
     'tests for using celery to route nodes'
     def setUp(self):
         self.celery = get_test_celery()
-        self.router = Router()
+        self.router = CeleryRouter(self.celery.task)
 
     def test_registers_as_task(self):
         'registers the function as a task'
@@ -267,7 +287,7 @@ class CeleryRouterTests(TestCase):
 
     def test_adds_when_initialized(self):
         'if router is passed a celery task when initialized it wraps with it'
-        r = Router(celery_task=self.celery.task)
+        r = CeleryRouter(celery_task=self.celery.task)
 
         l = lambda x: x
         l.__name__ = 'test'
@@ -276,3 +296,16 @@ class CeleryRouterTests(TestCase):
         self.assertTrue(
             isinstance(r.functions[prefix('test')], Task)
         )
+
+    def test_calls_delay(self):
+        'calls delay to route'
+        func = lambda n: n
+        func.name = 'name'
+        self.router.node(tuple(), entry_point=True)(func)
+
+        node = mock.Mock()  # replace node with mock to test call
+        self.router.functions['name'] = node
+
+        self.router(x=1)
+
+        node.delay.assert_called_with(_origin='__entry_point', x=1)

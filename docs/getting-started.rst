@@ -10,7 +10,7 @@ Installing
 Eventually, you'll be able to install via `pip`. However, while the library is
 under initial development you'll need to install via git::
 
-    pip install -e git+git@github.com:BrianHicks/emit.git#egg=emit
+    pip install emit
 
 Quickstart
 ----------
@@ -41,7 +41,7 @@ First, we need to construct a router:
 
 .. literalinclude:: ../examples/simple/graph.py
    :language: python
-   :lines: 5
+   :lines: 6
 
 Since we're keeping everything in-memory, we don't need to specify anything to
 get this to work properly. It should "Just Work(TM)".
@@ -50,7 +50,7 @@ Next, we define a function to split apart a document on spaces to get words:
 
 .. literalinclude:: ../examples/simple/graph.py
    :language: python
-   :lines: 10-14
+   :lines: 13-17
 
 ``Router`` provides a decorator. The first argument is the fields that the
 decorated function returns. These are wrapped in a message and passed around
@@ -70,7 +70,7 @@ words, so let's count them now:
 
 .. literalinclude:: ../examples/simple/graph.py
    :language: python
-   :lines: 16-24
+   :lines: 20,23-30
 
 There's a little less going on in this function. We just update a ``Counter``
 builtin, and then return the word and the count to be passed down the graph. In
@@ -86,7 +86,7 @@ graph:
 
 .. literalinclude:: ../examples/simple/graph.py
    :language: python
-   :lines: 27
+   :lines: 33
 
 Calling this graph is easy, since we defined a function as an entry point. You
 can call any of the functions (or the router itself) by using keyword arguments

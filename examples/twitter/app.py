@@ -1,13 +1,13 @@
 'simple celery app'
 from celery import Celery
-from emit import Router
+from emit import CeleryRouter
 
 app = Celery(
     'celery_emit_example',
     broker='redis://'
 )
 app.conf.update(
-    CELERY_IMPORTS = ('tasks',)
+    CELERY_IMPORTS=('tasks',)
 )
 
-router = Router(celery_task=app.task, node_modules=['tasks'])
+router = CeleryRouter(celery_task=app.task, node_modules=['tasks'])

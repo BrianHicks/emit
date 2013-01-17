@@ -27,7 +27,7 @@ word:
 
 .. literalinclude:: ../examples/celery/tasks.py
    :language: python
-   :lines: 4-7
+   :lines: 5-8
 
 We don't have to give any special syntax to get these tasks to work with
 celery: since we specified it in the router, they just do.
@@ -37,7 +37,7 @@ function, you can do that too:
 
 .. literalinclude:: ../examples/celery/tasks.py
    :language: python
-   :lines: 9-12
+   :lines: 11-14
 
 Obviously rate limiting to 5 per second in this case is a bit contrived, but
 you get the general idea: it's easy to configure tasks within the decorator by

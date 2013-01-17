@@ -10,21 +10,10 @@ from .message import Message, NoResult
 
 class Router(object):
     'A router object. Holds routes and references to functions for dispatch'
-    def __init__(self, initial_routes=None, initial_fields=None,
-                initial_functions=None, celery_task=None,
-                message_class=None, node_modules=None, node_package=None):
+    def __init__(self, message_class=None, node_modules=None, node_package=None):
         '''\
         Create a new router object. All parameters are optional.
 
-        :param initial_routes: custom routes to initiate router with
-        :type initial_routes: dict
-        :param initial_fields: custom fields to wrap output in
-        :type initial_fields: dict
-        :param initial_functions: named functions to call
-        :type initial_functions: dict
-        :param celery_task: celery task to apply to all nodes (can be
-                            overridden in :py:meth:`Router.node`.)
-        :type celery_task: A celery task decorator, in any form
         :param message_class: wrapper class for messages passed to nodes
         :type message_class: :py:class:`emit.message.Message` or subclass
         :param node_modules: a list of modules that contain nodes
@@ -36,14 +25,13 @@ class Router(object):
         :exceptions: None
         :returns: None
         '''
-        self.routes = initial_routes or {}
+        self.routes = {}
         self.names = set()
         self.regexes = {}
+        self.ignore_regexes = {}
 
-        self.fields = initial_fields or {}
-        self.functions = initial_functions or {}
-
-        self.celery_task = celery_task
+        self.fields = {}
+        self.functions = {}
 
         self.message_class = message_class or Message
 
@@ -114,8 +102,8 @@ class Router(object):
 
         return wrapped
 
-
-    def node(self, fields, subscribe_to=None, celery_task=None, entry_point=False):
+    def node(self, fields, subscribe_to=None, entry_point=False, ignore=None,
+             **wrapper_options):
         '''\
         Decorate a function to make it a node.
 
@@ -128,16 +116,24 @@ class Router(object):
 
         :param fields: fields that this function returns
         :type fields: ordered iterable of :py:class:`str`
-        :param subscribe_to: functions in the graph to subscribe to. Include
-                             "*" to route to this function after every emit.
+        :param subscribe_to: functions in the graph to subscribe to. These
+                             indicators can be regular expressions.
         :type subscribe_to: :py:class:`str` or iterable of :py:class:`str`
-        :param celery_task: celery task to apply to only this node. Use this to
-                            add custom celery attributes (like rate limiting)
-        :type celery_task: any celery task type
+        :param ignore: functions in the graph to ignore (also uses regular
+                       expressions.) Useful for ignoring specific functions in
+                       a broad regex.
+        :type ignore: :py:class:`str` or iterable of :py:class:`str`
         :param entry_point: Set to ``True`` to mark this as an entry point -
                             that is, this function will be called when the
                             router is called directly.
         :type entry_point: :py:class:`bool`
+
+        In addition to all of the above, you can define a ``wrap_node``
+        function on a subclass of Router, which will need to receive node and
+        an options dictionary. Any extra options passed to node will be passed
+        down to the options dictionary. See
+        :py:class:`emit.router.CeleryRouter.wrap_node` as an example.
+
         :returns: decorated and wrapped function, or decorator if called directly
         '''
         def outer(func):
@@ -146,19 +142,14 @@ class Router(object):
             self.logger.debug('wrapping %s', func)
             wrapped = self.wrap_as_node(func)
 
-            # celery registers tasks by decorating them, and so do we, so the
-            # user can pass a celery task and we'll wrap our code with theirs
-            # in a nice package celery can execute.
-            if celery_task or self.celery_task:
-                if celery_task:
-                    wrapped = celery_task(wrapped)
-                else:
-                    wrapped = self.celery_task(wrapped)
+            if hasattr(self, 'wrap_node'):
+                self.logger.debug('wrapping node "%s" in custom wrapper', wrapped)
+                wrapped = self.wrap_node(wrapped, wrapper_options)
 
             # register the task in the graph
             name = self.get_name(func)
             self.register(
-                name, wrapped, fields, subscribe_to, entry_point
+                name, wrapped, fields, subscribe_to, entry_point, ignore
             )
 
             return wrapped
@@ -205,7 +196,7 @@ class Router(object):
 
         return self.message_class(result)
 
-    def register(self, name, func, fields, subscribe_to, entry_point):
+    def register(self, name, func, fields, subscribe_to, entry_point, ignore):
         '''
         Register a named function in the graph
 
@@ -221,6 +212,9 @@ class Router(object):
         self.functions[name] = func
 
         self.register_route(subscribe_to, name)
+
+        if ignore:
+            self.register_ignore(ingore, name)
 
         if entry_point:
             self.add_entry_point(name)
@@ -241,7 +235,7 @@ class Router(object):
         Add routes to the routing dictionary
 
         :param origins: a number of origins to register
-        :type origins: :py:class:`str` or iterable of :py:class:`str`
+        :type origins: :py:class:`str` or iterable of :py:class:`str` or None
         :param destination: where the origins should point to
         :type destination: :py:class:`str`
 
@@ -254,31 +248,58 @@ class Router(object):
         self.names.add(destination)
         self.logger.debug('added "%s" to names', destination)
 
-        origins = origins or [] # remove None
+        origins = origins or []  # remove None
         if not isinstance(origins, list):
             origins = [origins]
 
         self.regexes.setdefault(destination, [re.compile(origin) for origin in origins])
 
-        resolved_origins = set()
+        self.regenerate_routes()
 
+    def register_ignore(self, origins, destination):
+        '''
+        Add routes to the ignore dictionary
+
+        :param origins: a number of origins to register
+        :type origins: :py:class:`str` or iterable of :py:class:`str`
+        :param destination: where the origins should point to
+        :type destination: :py:class:`str`
+
+        Ignore dictionary takes the following form::
+
+            {'node_a': set(['node_b', 'node_c']),
+             'node_b': set(['node_d'])}
+
+        '''
+        if not isinstance(origins, list):
+            origins = [origins]
+
+        self.ignore_regexes.setdefault(destination, [re.compile(origin) for origin in origins])
         self.regenerate_routes()
 
     def regenerate_routes(self):
         'regenerate the routes after a new route is added'
         for destination, origins in self.regexes.items():
-            resolved = set()
-            for name in self.names:
-                if any(origin.search(name) for origin in origins):
-                    resolved.add(name)
+            # we want only the names that match the destination regexes.
+            resolved = [
+                name for name in self.names
+                if name is not destination
+                and any(origin.search(name) for origin in origins)
+            ]
 
-            try:
-                resolved.remove(destination) # to avoid infinite loop
-            except KeyError:
-                pass
-
+            ignores = self.ignore_regexes.get(destination, [])
             for origin in resolved:
                 destinations = self.routes.setdefault(origin, set())
+
+                if any(ignore.search(origin) for ignore in ignores):
+                    self.logger.info('ignoring route "%s" -> "%s"', origin, destination)
+                    try:
+                        destinations.remove(destination)
+                        self.logger.debug('removed "%s" -> "%s"', origin, destination)
+                    except KeyError:
+                        pass
+
+                    continue
 
                 if destination not in destinations:
                     self.logger.info('added route "%s" -> "%s"', origin, destination)
@@ -313,18 +334,10 @@ class Router(object):
         :type destination: :py:class:`str`
         :param message: message to dispatch
         :type message: :py:class:`emit.message.Message` or subclass
-
-        Will delay the message (using celery) instead of calling it directly if
-        possible.
         '''
         func = self.functions[destination]
-
-        if hasattr(func, 'delay'):
-            self.logger.debug('delaying %r', func)
-            return func.delay(_origin=origin, **message)
-        else:
-            self.logger.debug('calling %r directly', func)
-            return func(_origin=origin, **message)
+        self.logger.debug('calling %r directly', func)
+        return func(_origin=origin, **message)
 
     def wrap_result(self, name, result):
         '''
@@ -348,14 +361,50 @@ class Router(object):
 
         :param func: function to get the name of
         :type func: callable
-
-        Gets celery assigned name, if present (IE ``name`` instead of
-        ``func_name``)
         '''
-        if hasattr(func, 'name'):  # celery-decorated function
+        if hasattr(func, 'name'):
             return func.name
 
         return '%s.%s' % (
             func.__module__,
             func.__name__
         )
+
+
+class CeleryRouter(Router):
+    'Router specifically for Celery routing'
+    def __init__(self, celery_task, *args, **kwargs):
+        '''\
+        Specifically route when celery is needed
+
+        :param celery_task: celery task to apply to all nodes (can be
+                            overridden in :py:meth:`Router.node`.)
+        :type celery_task: A celery task decorator, in any form
+        '''
+        super(CeleryRouter, self).__init__(*args, **kwargs)
+        self.celery_task = celery_task
+        self.logger.debug('Initialized Celery Router')
+
+    def dispatch(self, origin, destination, message):
+        '''\
+        enqueue a message with Celery
+
+        :param destination: destination to dispatch to
+        :type destination: :py:class:`str`
+        :param message: message to dispatch
+        :type message: :py:class:`emit.message.Message` or subclass
+        '''
+        func = self.functions[destination]
+        self.logger.debug('delaying %r', func)
+        return func.delay(_origin=origin, **message)
+
+    def wrap_node(self, node, options):
+        '''\
+        celery registers tasks by decorating them, and so do we, so the user
+        can pass a celery task and we'll wrap our code with theirs in a nice
+        package celery can execute.
+        '''
+        if 'celery_task' in options:
+            return options['celery_task'](node)
+
+        return self.celery_task(node)
