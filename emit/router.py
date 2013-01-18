@@ -44,6 +44,8 @@ class Router(object):
         self.logger = logging.getLogger(__name__ + '.Router')
         self.logger.debug('Initialized Router')
 
+        self.routing_enabled = True
+
     def __call__(self, **kwargs):
         '''\
         Route a message to all nodes marked as entry points.
@@ -306,6 +308,10 @@ class Router(object):
 
                 destinations.add(destination)
 
+    def disable_routing(self):
+        'disable routing (usually for testing purposes)'
+        self.routing_enabled = False
+
     def route(self, origin, message):
         '''\
         Using the routing dictionary, dispatch a message to all subscribers
@@ -319,6 +325,9 @@ class Router(object):
         # we can't resolve them while the object is initializing, so we have to
         # do it just in time to route.
         self.resolve_node_modules()
+
+        if not self.routing_enabled:
+            return
 
         subs = self.routes.get(origin, set())
 
