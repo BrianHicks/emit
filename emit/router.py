@@ -312,6 +312,10 @@ class Router(object):
         'disable routing (usually for testing purposes)'
         self.routing_enabled = False
 
+    def enable_routing(self):
+        'enable routing (after calling ``disable_routing``)'
+        self.routing_enabled = True
+
     def route(self, origin, message):
         '''\
         Using the routing dictionary, dispatch a message to all subscribers
