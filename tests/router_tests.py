@@ -237,6 +237,23 @@ class RouterTests(TestCase):
 
         self.assertEqual(0, watcher.call_count)
 
+    def test_enable_routing(self):
+        'enable routing re-enables routing'
+        a = lambda x: x
+        a.__name__ = 'a'
+        node = self.router.node(['x'])(a)
+
+        watcher = get_named_mock('watcher')
+        self.router.node(['n'], 'a')(watcher)
+
+        self.router.disable_routing()
+        node(n=1)
+        self.assertEqual(0, watcher.call_count)
+
+        self.router.enable_routing()
+        node(n=1)
+        self.assertEqual(1, watcher.call_count)
+
     def test_register_route_regex(self):
         'adding routes with a regular expression route correctly'
         self.router.register_route('__entry_point', 'test')
