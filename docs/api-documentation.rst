@@ -7,7 +7,7 @@ Router
 .. module:: emit.router
 
 .. autoclass:: Router
-   :members: dispatch, get_message_from_call, get_name, regenerate_routes, register, register_ignore, register_route, route, wrap_result
+   :members: disable_routing, dispatch, enable_routing, get_message_from_call, get_name, regenerate_routes, register, register_ignore, register_route, route, wrap_result
 
    .. automethod:: Router.__init__
 
