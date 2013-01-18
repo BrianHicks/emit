@@ -28,6 +28,7 @@ Contents:
    regex-routing
    command-line-utilities
    logging
+   testing
    api-documentation
    glossary
    changelog
