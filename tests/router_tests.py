@@ -61,6 +61,13 @@ class ResolveNodeModulesTests(TestCase):
         self.router.resolve_node_modules()
         self.fake_importlib.import_module.assert_called_with('test', 'pkg')
 
+    def test_called_once(self):
+        'called once'
+        self.router.resolve_node_modules()
+        self.router.resolve_node_modules()
+
+        self.assertEqual(1, self.fake_importlib.import_module.call_count)
+
 
 class RouterTests(TestCase):
     def setUp(self):
