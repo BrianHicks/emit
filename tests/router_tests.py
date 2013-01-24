@@ -34,7 +34,14 @@ class ResolveNodeModulesTests(TestCase):
         'set up a patch'
         importlib_patch = mock.patch('emit.router.importlib')
         self.fake_importlib = importlib_patch.start()
-        self.fake_importlib.import_module.return_value = 'test'
+
+        def maybe_raise(imp, pkg):
+            if imp == 'bad':
+                raise ImportError('bad test import')
+
+            return imp
+
+        self.fake_importlib.import_module.side_effect = maybe_raise
 
         self.router = Router(node_modules=['test'], node_package='pkg')
 
@@ -52,9 +59,9 @@ class ResolveNodeModulesTests(TestCase):
 
     def test_imports_multi(self):
         'imports multiple node modules'
-        self.router.node_modules=['test1', 'test2']
+        self.router.node_modules = ['test1', 'test2']
         self.router.resolve_node_modules()
-        self.assertEqual(['test', 'test'], self.router.resolved_node_modules)
+        self.assertEqual(['test1', 'test2'], self.router.resolved_node_modules)
 
     def test_uses_node_package(self):
         'uses node_package'
@@ -67,6 +74,14 @@ class ResolveNodeModulesTests(TestCase):
         self.router.resolve_node_modules()
 
         self.assertEqual(1, self.fake_importlib.import_module.call_count)
+
+    def test_imports_completely(self):
+        'imports completely (fails all on ImportError)'
+        self.router.node_modules = ['test1', 'bad', 'test2']
+
+        self.assertRaises(ImportError, self.router.resolve_node_modules)
+
+        self.assertEqual([], self.router.resolved_node_modules)
 
 
 class RouterTests(TestCase):
