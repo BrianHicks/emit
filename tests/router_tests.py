@@ -36,7 +36,7 @@ class ResolveNodeModulesTests(TestCase):
         self.fake_importlib = importlib_patch.start()
         self.fake_importlib.import_module.return_value = 'test'
 
-        self.router = Router(node_modules=['test'], node_package='test')
+        self.router = Router(node_modules=['test'], node_package='pkg')
 
     def tearDown(self):
         self.fake_importlib.stop()
@@ -55,6 +55,11 @@ class ResolveNodeModulesTests(TestCase):
         self.router.node_modules=['test1', 'test2']
         self.router.resolve_node_modules()
         self.assertEqual(['test', 'test'], self.router.resolved_node_modules)
+
+    def test_uses_node_package(self):
+        'uses node_package'
+        self.router.resolve_node_modules()
+        self.fake_importlib.import_module.assert_called_with('test', 'pkg')
 
 
 class RouterTests(TestCase):
