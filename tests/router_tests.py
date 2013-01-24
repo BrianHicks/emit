@@ -28,6 +28,35 @@ def prefix(name):
     return '%s.%s' % (__name__, name)
 
 
+class ResolveNodeModulesTests(TestCase):
+    'tests for Router.resolve_node_modules'
+    def setUp(self):
+        'set up a patch'
+        importlib_patch = mock.patch('emit.router.importlib')
+        self.fake_importlib = importlib_patch.start()
+        self.fake_importlib.import_module.return_value = 'test'
+
+        self.router = Router(node_modules=['test'], node_package='test')
+
+    def tearDown(self):
+        self.fake_importlib.stop()
+
+    def test_initial(self):
+        'initial state is empty'
+        self.assertEqual([], self.router.resolved_node_modules)
+
+    def test_imports_single(self):
+        'imports a single node module'
+        self.router.resolve_node_modules()
+        self.assertEqual(['test'], self.router.resolved_node_modules)
+
+    def test_imports_multi(self):
+        'imports multiple node modules'
+        self.router.node_modules=['test1', 'test2']
+        self.router.resolve_node_modules()
+        self.assertEqual(['test', 'test'], self.router.resolved_node_modules)
+
+
 class RouterTests(TestCase):
     def setUp(self):
         self.router = Router()
@@ -166,35 +195,6 @@ class RouterTests(TestCase):
             )
         except AttributeError:  # python 2.6
             self.assertRaises(RuntimeError, self.router, x=1)
-
-    @mock.patch('emit.router.importlib')
-    def test_registers_node_modules(self, mock_importlib):
-        'register node modules in init (instead of importing right away)'
-        r = Router(node_modules=['test'], node_package='test')
-
-        self.assertEqual(['test'], r.node_modules)
-        self.assertEqual('test', r.node_package)
-        self.assertEqual(False, r.resolved_node_modules)
-        self.assertEqual(0, mock_importlib.import_module.call_count)
-
-    @mock.patch('emit.router.importlib')
-    def test_imports_with_resolve_node_modules(self, mock_importlib):
-        'resolves imports'
-        r = Router(node_modules=['test'], node_package='test')
-        r.resolve_node_modules()
-
-        mock_importlib.import_module.assert_called_with('test', 'test')
-
-    @mock.patch('emit.router.importlib')
-    def test_imports_only_once(self, mock_importlib):
-        'resolves imports only once'
-        r = Router(node_modules=['test'], node_package='test')
-
-        # twice!
-        r.resolve_node_modules()
-        r.resolve_node_modules()
-
-        self.assertEqual(1, mock_importlib.import_module.call_count)
 
     def test_no_result_generator(self):
         'a generator returning NoResult should only pass on non-NoResults'
