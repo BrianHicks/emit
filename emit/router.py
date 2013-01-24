@@ -37,7 +37,7 @@ class Router(object):
 
         # manage imported packages, lazily importing before the first message
         # is routed.
-        self.resolved_node_modules = False
+        self.resolved_node_modules = []
         self.node_modules = node_modules or []
         self.node_package = node_package
 
@@ -160,13 +160,13 @@ class Router(object):
 
     def resolve_node_modules(self):
         'import the modules specified in init'
-        if self.resolved_node_modules:
-            return
+        if not self.resolved_node_modules:
+            for _import in self.node_modules:
+                self.resolved_node_modules.append(
+                    importlib.import_module(_import, self.node_package)
+                )
 
-        for _import in self.node_modules:
-            importlib.import_module(_import, self.node_package)
-
-        self.resolved_node_modules = True
+        return self.resolved_node_modules
 
     def get_message_from_call(self, *args, **kwargs):
         '''\
