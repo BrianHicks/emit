@@ -161,10 +161,14 @@ class Router(object):
     def resolve_node_modules(self):
         'import the modules specified in init'
         if not self.resolved_node_modules:
-            for _import in self.node_modules:
-                self.resolved_node_modules.append(
-                    importlib.import_module(_import, self.node_package)
-                )
+            try:
+                self.resolved_node_modules = [
+                    importlib.import_module(mod, self.node_package)
+                    for mod in self.node_modules
+                ]
+            except ImportError:
+                self.resolved_node_modules = []
+                raise
 
         return self.resolved_node_modules
 
