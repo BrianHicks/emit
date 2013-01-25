@@ -1,0 +1,2 @@
+class TransactionHandler(object):
+    pass
