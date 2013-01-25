@@ -220,7 +220,7 @@ class Router(object):
         self.register_route(subscribe_to, name)
 
         if ignore:
-            self.register_ignore(ingore, name)
+            self.register_ignore(ignore, name)
 
         if entry_point:
             self.add_entry_point(name)
