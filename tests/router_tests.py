@@ -215,6 +215,28 @@ class AddEntryPointTests(TestCase):
             self.router.add_entry_point('test')
         )
 
+    def test_when_blank(self):
+        'adds a new route and key in the routing dict'
+        try:
+            self.assertNotIn('__entry_point', self.router.routes)
+        except AttributeError:  # python 2.6
+            self.assertTrue('__entry_point' not in self.router.routes)
+
+        self.router.add_entry_point('test')
+
+        self.assertEqual(set(['test']), self.router.routes['__entry_point'])
+
+    def test_when_set(self):
+        'adds a new route to the existing key in the routing dict'
+        self.router.routes['__entry_point'] = set(['existing'])
+
+        self.router.add_entry_point('test')
+
+        self.assertEqual(
+            set(['test', 'existing']),
+            self.router.routes['__entry_point']
+        )
+
 
 class RegisterRouteTests(TestCase):
     'test Router.register_route'
