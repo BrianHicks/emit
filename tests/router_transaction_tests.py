@@ -12,28 +12,25 @@ class RouterTransactionTests(TestCase):
             transaction_handler=TransactionHandler
         )
 
+        self.func = lambda msg: msg.x
+
     def test_only_works_on_nodes(self):
         'transaction decorator only works on nodes'
-        def func(msg):
-            return msg.x
-
         transaction = self.router.transaction('test')
         try:
             self.assertRaisesRegexp(
                 ValueError, 'transactions may only be applied to nodes',
-                transaction, func
+                transaction, self.func
             )
         except AttributeError:  # python 2.6
             self.assertRaises(
                 ValueError,
-                transaction, func
+                transaction, self.func
             )
 
     def test_raises_if_no_handler(self):
         'transaction decorator only works if there is a handler'
-        @self.router.node(('x',))
-        def func(msg):
-            return msg.x
+        func = self.router.node(('x',))(self.func)
 
         self.router.transaction_handler = None
         try:
