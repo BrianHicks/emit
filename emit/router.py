@@ -186,6 +186,10 @@ class Router(object):
                 raise ValueError('transactions may only be applied to nodes')
 
             self.add_to_transaction(transaction_name, name)
+            if rollback:
+                self.add_rollback_function(
+                    transaction_name, name, rollback_handler
+                )
 
             return func
 
@@ -420,6 +424,13 @@ class Router(object):
         'add to a transaction'
         self.transactions.setdefault(transaction, set()).add(name)
         return self.transactions[transaction]
+
+    def add_rollback_function(self, transaction, name, func):
+        'add a rollback handler to a transaction'
+        self.rollback_functions.setdefault(transaction, dict()).update({
+            name: func
+        })
+        return self.rollback_functions[transaction]
 
 
 class CeleryRouter(Router):
