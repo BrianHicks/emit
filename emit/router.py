@@ -168,6 +168,12 @@ class Router(object):
         '''
         wrap the function in a transaction
         '''
+        if not self.transaction_handler:
+            self.logger.error(
+                'transaction "%s" was created without a handler', name
+            )
+            raise ValueError('there is no transaction handler on the router')
+
         def inner(func):
             'do processing, then return the function'
             name = self.get_name(func)
