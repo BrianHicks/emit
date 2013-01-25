@@ -374,7 +374,10 @@ class Router(object):
         if not isinstance(result, tuple):
             result = tuple([result])
 
-        return dict(zip(self.fields[name], result))
+        try:
+            return dict(zip(self.fields[name], result))
+        except KeyError:
+            raise ValueError('"%s" has no associated fields' % name)
 
     def get_name(self, func):
         '''
