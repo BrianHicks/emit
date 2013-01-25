@@ -131,6 +131,78 @@ class GetMessageFromCallTests(TestCase):
             ), 'result of get_message_from_call is not a Custom instance')
 
 
+class RegisterTests(TestCase):
+    'test Router.register'
+    def setUp(self):
+        self.router = Router()
+
+        # variables to use when testing
+        self.name = 'test_name'
+        self.func = lambda x: x
+        self.fields = ('x',)
+        self.subscribe_to = ['x', 'y']
+        self.ignore = 'test_ignore'
+
+    def get_args(self, ignore=None, entry_point=False):
+        'get arguments for register'
+        return (
+            self.name, self.func, self.fields, self.subscribe_to,
+            entry_point, ignore
+        )
+
+    def test_adds_to_fields(self):
+        'register adds the fields to the fields dict'
+        self.router.register(*self.get_args())
+
+        self.assertEqual(
+            self.fields,
+            self.router.fields[self.name]
+        )
+
+    def test_adds_to_functions(self):
+        'register adds to the functions dict'
+        self.router.register(*self.get_args())
+
+        self.assertEqual(
+            self.func,
+            self.router.functions[self.name]
+        )
+
+    @mock.patch('emit.router.Router.register_route', autospec=True)
+    def test_registers_route(self, fake_rr):
+        'register calls register_route'
+        self.router.register(*self.get_args())
+        fake_rr.assert_called_once_with(
+            self.router, self.subscribe_to, self.name
+        )
+
+    @mock.patch('emit.router.Router.register_ignore', autospec=True)
+    def test_does_not_call_ignore(self, fake_ignore):
+        'register does not call register_ignore if it is not provided'
+        self.router.register(*self.get_args(ignore=None))
+        self.assertEqual(0, fake_ignore.call_count)
+
+    @mock.patch('emit.router.Router.register_ignore', autospec=True)
+    def test_calls_ignore(self, fake_ignore):
+        'register calls register_ignore if it is provided'
+        self.router.register(*self.get_args(ignore=self.ignore))
+        fake_ignore.assert_called_once_with(
+            self.router, self.ignore, self.name
+        )
+
+    @mock.patch('emit.router.Router.add_entry_point', autospec=True)
+    def test_does_not_call_add_entry_point(self, fake_aep):
+        'register does not call add_entry_point if False'
+        self.router.register(*self.get_args(entry_point=False))
+        self.assertEqual(0, fake_aep.call_count)
+
+    @mock.patch('emit.router.Router.add_entry_point', autospec=True)
+    def test_calls_add_entry_point(self, fake_aep):
+        'register calls add_entry_point if True'
+        self.router.register(*self.get_args(entry_point=True))
+        fake_aep.assert_called_once_with(self.router, self.name)
+
+
 class RegisterRouteTests(TestCase):
     'test Router.register_route'
     def setUp(self):
