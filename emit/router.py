@@ -158,6 +158,13 @@ class Router(object):
 
         return outer
 
+    def transaction(self, name, rollback_handler):
+        '''
+        wrap the function in a transaction
+        '''
+        # we don't really do anything to the function, so just return it
+        return lambda func: func
+
     def resolve_node_modules(self):
         'import the modules specified in init'
         if self.resolved_node_modules:
