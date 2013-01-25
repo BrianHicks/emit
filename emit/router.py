@@ -164,6 +164,10 @@ class Router(object):
         '''
         def inner(func):
             'do processing, then return the function'
+            name = self.get_name(func)
+            if name not in self.names:
+                raise ValueError('transactions may only be applied to nodes')
+
             return func
 
         return inner
