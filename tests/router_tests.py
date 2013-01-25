@@ -105,6 +105,14 @@ class GetMessageFromCallTests(TestCase):
             self.router.get_message_from_call(**d)
         )
 
+    def test_two_args(self):
+        'two args should raise a TypeError'
+        self.assertRaises(TypeError, self.router.get_message_from_call, 1, 2)
+
+    def test_mixed_args_kwargs(self):
+        'mixed args and kwargs'
+        self.assertRaises(TypeError, self.router.get_message_from_call, 1, x=2)
+
 
 class RouterTests(TestCase):
     def setUp(self):
