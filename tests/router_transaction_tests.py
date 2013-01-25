@@ -13,6 +13,7 @@ class RouterTransactionTests(TestCase):
         )
 
         self.func = lambda msg: msg.x
+        self.func.__name__ = 'test_func'
 
     def test_only_works_on_nodes(self):
         'transaction decorator only works on nodes'
@@ -43,6 +44,16 @@ class RouterTransactionTests(TestCase):
                 ValueError,
                 self.router.transaction, 'test'
             )
+
+    def test_adds_to_transaction(self):
+        'transaction adds the name to transactions'
+        self.router.transaction('test')(
+            self.router.node(('x',))(self.func)
+        )
+        self.assertEqual(
+            set([__name__ + '.test_func']),
+            self.router.transactions['test']
+        )
 
 
 class AddToTransactionTests(TestCase):
