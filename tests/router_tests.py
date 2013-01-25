@@ -1,5 +1,6 @@
 'tests for emit/router.py'
 from __future__ import print_function
+import re
 from unittest import TestCase
 
 from celery import Celery, Task
@@ -286,6 +287,13 @@ class RegisterRouteTests(TestCase):
         self.assertEqual(
             {'test1': set(['test3']), 'test2': set()},
             self.router.routes
+        )
+
+    def test_returns_routes(self):
+        'register_route returns the currently registered routes'
+        self.assertEqual(
+            ['origin'],
+            [r.pattern for r in self.router.register_route(['origin'], 'destination')]
         )
 
 
