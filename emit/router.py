@@ -165,13 +165,13 @@ class Router(object):
 
         return outer
 
-    def transaction(self, name, rollback_handler=None):
+    def transaction(self, transaction_name, rollback_handler=None):
         '''
         wrap the function in a transaction
         '''
         if not self.transaction_handler:
             self.logger.error(
-                'transaction "%s" was created without a handler', name
+                'transaction "%s" was created without a handler', transaction_name
             )
             raise ValueError('there is no transaction handler on the router')
 
