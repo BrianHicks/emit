@@ -328,6 +328,19 @@ class WrapResultTests(TestCase):
             self.router.wrap_result('multi', (1, 2))
         )
 
+    def test_raises_valueerror(self):
+        'raises a ValueError if the keys are not present'
+        try:
+            self.assertRaisesRegexp(
+                ValueError, '"dne" has no associated fields',
+                self.router.wrap_result, 'dne', 1
+            )
+        except AttributeError:  # python 2.6
+            self.assertRaises(
+                ValueError,
+                self.router.wrap_result, 'dne', 1
+            )
+
 
 class DisableEnableRoutingTests(TestCase):
     'tests for (disable|enable)_routing'
