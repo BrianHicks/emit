@@ -20,8 +20,11 @@ class Router(object):
         :param node_modules: a list of modules that contain nodes
         :type node_modules: a list of :py:class:`str`, or ``None``.
         :param node_package: if any node_modules are relative, the path to base
-                               off of.
+                             off of.
         :type node_package: :py:class:`str`, or ``None``.
+        :param transaction_handler: a class to handle (persistence for)
+                                    transactions
+        :type transaction_handler: subclass of :py:class`emit.transactions.base.TransactionHandler`
 
         :exceptions: None
         :returns: None
