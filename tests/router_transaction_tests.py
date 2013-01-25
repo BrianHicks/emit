@@ -2,12 +2,15 @@
 from unittest import TestCase
 
 from emit import Router
+from emit.transactions.base import TransactionHandler
 
 
 class MetaTests(TestCase):
     'tests for things outside of the actual transaction handling'
     def setUp(self):
-        self.router = Router()
+        self.router = Router(
+            transaction_handler=TransactionHandler
+        )
 
     def test_only_works_on_nodes(self):
         'transaction decorator only works on nodes'
