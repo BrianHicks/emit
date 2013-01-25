@@ -46,3 +46,26 @@ class MetaTests(TestCase):
                 ValueError,
                 self.router.transaction, 'test'
             )
+
+
+class AddToTransactionTests(TestCase):
+    'tests for add_to_transaction'
+    def setUp(self):
+        self.router = Router(
+            transaction_handler=TransactionHandler
+        )
+
+    def test_add_transaction(self):
+        'add_transaction adds to a set'
+        self.assertEqual(
+            set(['name']),
+            self.router.add_to_transaction('test', 'name')
+        )
+
+    def test_existing_transaction(self):
+        'add_transaction uses existing set'
+        self.router.transactions['test'] = set(['existing'])
+        self.assertEqual(
+            set(['existing', 'name']),
+            self.router.add_to_transaction('test', 'name')
+        )
