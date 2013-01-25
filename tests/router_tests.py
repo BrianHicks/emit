@@ -307,6 +307,28 @@ class RegisterRouteTests(TestCase):
         )
 
 
+class WrapResultTests(TestCase):
+    'tests for Router.wrap_result'
+    def setUp(self):
+        self.router = Router()
+        self.router.fields['single'] = ('a',)
+        self.router.fields['multi'] = ('a', 'b')
+
+    def test_wraps_single(self):
+        'wraps a single value'
+        self.assertEqual(
+            {'a': 1},
+            self.router.wrap_result('single', 1)
+        )
+
+    def test_wraps_multiple(self):
+        'wraps multiple values'
+        self.assertEqual(
+            {'a': 1, 'b': 2},
+            self.router.wrap_result('multi', (1, 2))
+        )
+
+
 class DisableEnableRoutingTests(TestCase):
     'tests for (disable|enable)_routing'
     def setUp(self):
