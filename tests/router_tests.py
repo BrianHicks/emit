@@ -203,6 +203,19 @@ class RegisterTests(TestCase):
         fake_aep.assert_called_once_with(self.router, self.name)
 
 
+class AddEntryPointTests(TestCase):
+    'tests for Router.add_entry_point'
+    def setUp(self):
+        self.router = Router()
+
+    def test_returns_routes(self):
+        'add_entry_point returns routes'
+        self.assertEqual(
+            set(['test']),
+            self.router.add_entry_point('test')
+        )
+
+
 class RegisterRouteTests(TestCase):
     'test Router.register_route'
     def setUp(self):
