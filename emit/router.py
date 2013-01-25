@@ -369,6 +369,8 @@ class Router(object):
         :param result: return value from function. Will be converted to tuple.
         :type result: anything
 
+        :raises: :py:exc:`ValueError` if name has no associated fields
+
         :returns: :py:class:`dict`
         '''
         if not isinstance(result, tuple):
