@@ -84,6 +84,28 @@ class ResolveNodeModulesTests(TestCase):
         self.assertEqual([], self.router.resolved_node_modules)
 
 
+class GetMessageFromCallTests(TestCase):
+    'tests for Router.get_message_from_call'
+    def setUp(self):
+        self.router = Router()
+
+    def test_from_args(self):
+        'gets correct message from args'
+        d = {'test': 1}
+        self.assertEqual(
+            Message(d),
+            self.router.get_message_from_call(d)
+        )
+
+    def test_from_kwargs(self):
+        'gets correct message from kwargs'
+        d = {'test': 1}
+        self.assertEqual(
+            Message(d),
+            self.router.get_message_from_call(**d)
+        )
+
+
 class RouterTests(TestCase):
     def setUp(self):
         self.router = Router()
