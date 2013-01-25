@@ -379,7 +379,9 @@ class Router(object):
         try:
             return dict(zip(self.fields[name], result))
         except KeyError:
-            raise ValueError('"%s" has no associated fields' % name)
+            msg = '"%s" has no associated fields'
+            self.logger.exception(msg, name)
+            raise ValueError(msg % name)
 
     def get_name(self, func):
         '''
