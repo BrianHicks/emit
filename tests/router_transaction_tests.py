@@ -5,7 +5,7 @@ from emit import Router
 from emit.transactions.base import TransactionHandler
 
 
-class MetaTests(TestCase):
+class RouterTransactionTests(TestCase):
     'tests for things outside of the actual transaction handling'
     def setUp(self):
         self.router = Router(

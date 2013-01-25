@@ -184,6 +184,8 @@ class Router(object):
                 )
                 raise ValueError('transactions may only be applied to nodes')
 
+            self.add_to_transaction(transaction_name, name)
+
             return func
 
         return inner
