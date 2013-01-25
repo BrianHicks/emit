@@ -15,6 +15,8 @@ class RouterTransactionTests(TestCase):
         self.func = lambda msg: msg.x
         self.func.__name__ = 'test_func'
 
+        self.rollback = lambda msg: msg.x
+
     def test_only_works_on_nodes(self):
         'transaction decorator only works on nodes'
         transaction = self.router.transaction('test')
@@ -53,6 +55,16 @@ class RouterTransactionTests(TestCase):
         self.assertEqual(
             set([__name__ + '.test_func']),
             self.router.transactions['test']
+        )
+
+    def test_adds_rollback_function(self):
+        'transaction adds rollback function'
+        self.router.transaction('test', self.rollback)(
+            self.router.node(('x',))(self.func)
+        )
+        self.assertEqual(
+            {__name__ + '.test_func': self.rollback},
+            self.router.rollback_functions['test']
         )
 
 
