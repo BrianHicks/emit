@@ -131,6 +131,57 @@ class GetMessageFromCallTests(TestCase):
             ), 'result of get_message_from_call is not a Custom instance')
 
 
+class RegisterRouteTests(TestCase):
+    'test Router.register_route'
+    def setUp(self):
+        self.router = Router()
+
+    def test_register_route_regex(self):
+        'adding routes with a regular expression route correctly'
+        self.router.register_route('__entry_point', 'test')
+        self.router.register_route('.+', 'test2')
+
+        self.assertEqual(
+            {'test': set(['test2'])},
+            self.router.routes
+        )
+
+    def test_register_route_before(self):
+        'adding routes after a regex has been added also match'
+        self.router.register_route('.+', 'test2')
+        self.router.register_route('__entry_point', 'test')
+
+        self.assertEqual(
+            {'test': set(['test2'])},
+            self.router.routes
+        )
+
+    def test_unsubscribed_routes_are_added(self):
+        'routes which have no subscribers are still added later'
+        self.router.register_route('.+', 'test2')
+        self.router.register_route(None, 'test')
+
+        self.assertEqual(
+            {'test': set(['test2'])},
+            self.router.routes
+        )
+
+    def test_ignored_routes(self):
+        'ignored routes are not added'
+        # add two base routes
+        self.router.register_route(None, 'test1')
+        self.router.register_route(None, 'test2')
+
+        # add ignore route
+        self.router.register_route(['test1', 'test2'], 'test3')
+        self.router.register_ignore('test2', 'test3')
+
+        self.assertEqual(
+            {'test1': set(['test3']), 'test2': set()},
+            self.router.routes
+        )
+
+
 class RouterTests(TestCase):
     def setUp(self):
         self.router = Router()
@@ -327,51 +378,6 @@ class RouterTests(TestCase):
         self.router.enable_routing()
         node(n=1)
         self.assertEqual(1, watcher.call_count)
-
-    def test_register_route_regex(self):
-        'adding routes with a regular expression route correctly'
-        self.router.register_route('__entry_point', 'test')
-        self.router.register_route('.+', 'test2')
-
-        self.assertEqual(
-            {'test': set(['test2'])},
-            self.router.routes
-        )
-
-    def test_register_route_before(self):
-        'adding routes after a regex has been added also match'
-        self.router.register_route('.+', 'test2')
-        self.router.register_route('__entry_point', 'test')
-
-        self.assertEqual(
-            {'test': set(['test2'])},
-            self.router.routes
-        )
-
-    def test_unsubscribed_routes_are_added(self):
-        'routes which have no subscribers are still added later'
-        self.router.register_route('.+', 'test2')
-        self.router.register_route(None, 'test')
-
-        self.assertEqual(
-            {'test': set(['test2'])},
-            self.router.routes
-        )
-
-    def test_ignored_routes(self):
-        'ignored routes are not added'
-        # add two base routes
-        self.router.register_route(None, 'test1')
-        self.router.register_route(None, 'test2')
-
-        # add ignore route
-        self.router.register_route(['test1', 'test2'], 'test3')
-        self.router.register_ignore('test2', 'test3')
-
-        self.assertEqual(
-            {'test1': set(['test3']), 'test2': set()},
-            self.router.routes
-        )
 
 
 class CeleryRouterTests(TestCase):
