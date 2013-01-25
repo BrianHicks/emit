@@ -26,6 +26,13 @@ class MessageTests(TestCase):
                 getattr, x, 'y'
             )
 
+    def test_repr(self):
+        x = Message(x=1, y=2)
+        self.assertEqual(
+            'Message(y=2, x=1)',
+            repr(x)
+        )
+
     def test_dir(self):
         'dir includes attributes'
         x = Message(x=1, y=2)
