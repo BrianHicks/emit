@@ -285,6 +285,8 @@ class Router(object):
         self.ignore_regexes.setdefault(destination, [re.compile(origin) for origin in origins])
         self.regenerate_routes()
 
+        return self.ignore_regexes[destination]
+
     def regenerate_routes(self):
         'regenerate the routes after a new route is added'
         for destination, origins in self.regexes.items():
