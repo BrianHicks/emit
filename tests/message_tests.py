@@ -39,3 +39,11 @@ class MessageTests(TestCase):
             json.dumps(d),
             x.as_json()
         )
+
+    def test_equality(self):
+        'two messages are equal if their bundles are equal'
+        d = {'x': 1, 'y': 2}
+        x = Message(**d)
+        y = Message(**d)
+
+        self.assertEqual(x, y)
