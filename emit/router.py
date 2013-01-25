@@ -166,6 +166,9 @@ class Router(object):
             'do processing, then return the function'
             name = self.get_name(func)
             if name not in self.names:
+                self.logger.exception(
+                    'tried to apply a transaction to non-node'
+                )
                 raise ValueError('transactions may only be applied to nodes')
 
             return func
