@@ -77,3 +77,38 @@ class AddToTransactionTests(TestCase):
             set(['existing', 'name']),
             self.router.add_to_transaction('test', 'name')
         )
+
+
+class AddRollbackFunctionTests(TestCase):
+    'tests for Router.add_rollback_function'
+    def setUp(self):
+        self.router = Router(
+            transaction_handler=TransactionHandler
+        )
+        self.func = lambda x: x
+
+    def test_adds_new(self):
+        'adds new rollback function'
+        self.router.add_rollback_function(
+            'test', 'name', self.func
+        )
+        self.assertEqual(
+            {'name': self.func},
+            self.router.rollback_functions['test']
+        )
+
+    def test_uses_existing(self):
+        'uses existing rollback dict'
+        self.router.rollback_functions = {
+            'test': {'test': self.func}
+        }
+        self.router.add_rollback_function(
+            'test', 'name', self.func
+        )
+        self.assertEqual(
+            {
+                'name': self.func,
+                'test': self.func,
+            },
+            self.router.rollback_functions['test']
+        )
