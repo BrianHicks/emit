@@ -12,6 +12,20 @@ class MessageTests(TestCase):
         x = Message(x=1)
         self.assertEqual(1, x.x)
 
+    def test_access_missing(self):
+        'accessing attributes that do not exist'
+        x = Message(x=1)
+        try:
+            self.assertRaisesRegex(
+                AttributeError, '"y" is not included in this message',
+                getattr, x, 'y'
+            )
+        except AttributeError:  # python 2.6
+            self.assertRaises(
+                AttributeError,
+                getattr, x, 'y'
+            )
+
     def test_dir(self):
         'dir includes attributes'
         x = Message(x=1, y=2)
