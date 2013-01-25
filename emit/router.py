@@ -235,6 +235,7 @@ class Router(object):
         :type destination: str
         '''
         self.routes.setdefault('__entry_point', set()).add(destination)
+        return self.routes['__entry_point']
 
     def register_route(self, origins, destination):
         '''
