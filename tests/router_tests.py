@@ -113,6 +113,23 @@ class GetMessageFromCallTests(TestCase):
         'mixed args and kwargs'
         self.assertRaises(TypeError, self.router.get_message_from_call, 1, x=2)
 
+    def test_message_class(self):
+        'a custom message class will be applied'
+        class Custom(Message):
+            pass
+
+        self.router.message_class = Custom
+        try:
+            self.assertIsInstance(
+                self.router.get_message_from_call(x=1),
+                Custom
+            )
+        except AttributeError:  # python 2.6
+            self.assertTrue(isinstance(
+                self.router.get_message_from_call(x=1),
+                Custom
+            ), 'result of get_message_from_call is not a Custom instance')
+
 
 class RouterTests(TestCase):
     def setUp(self):
