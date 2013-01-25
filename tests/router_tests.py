@@ -307,6 +307,43 @@ class RegisterRouteTests(TestCase):
         )
 
 
+class DisableEnableRoutingTests(TestCase):
+    'tests for (disable|enable)_routing'
+    def setUp(self):
+        self.router = Router()
+
+    def test_disable_routing(self):
+        'disable routing disables routing'
+        a = lambda x: x
+        a.__name__ = 'a'
+        node = self.router.node(['x'])(a)
+
+        watcher = get_named_mock('watcher')
+        self.router.node(['n'], 'a')(watcher)
+
+        self.router.disable_routing()
+        node(n=1)
+
+        self.assertEqual(0, watcher.call_count)
+
+    def test_enable_routing(self):
+        'enable routing re-enables routing'
+        a = lambda x: x
+        a.__name__ = 'a'
+        node = self.router.node(['x'])(a)
+
+        watcher = get_named_mock('watcher')
+        self.router.node(['n'], 'a')(watcher)
+
+        self.router.disable_routing()
+        node(n=1)
+        self.assertEqual(0, watcher.call_count)
+
+        self.router.enable_routing()
+        node(n=1)
+        self.assertEqual(1, watcher.call_count)
+
+
 class RouterTests(TestCase):
     def setUp(self):
         self.router = Router()
@@ -472,37 +509,6 @@ class RouterTests(TestCase):
         func(n=1)
 
         self.assertEqual(0, watcher.call_count)
-
-    def test_disable_routing(self):
-        'disable routing disables routing'
-        a = lambda x: x
-        a.__name__ = 'a'
-        node = self.router.node(['x'])(a)
-
-        watcher = get_named_mock('watcher')
-        self.router.node(['n'], 'a')(watcher)
-
-        self.router.disable_routing()
-        node(n=1)
-
-        self.assertEqual(0, watcher.call_count)
-
-    def test_enable_routing(self):
-        'enable routing re-enables routing'
-        a = lambda x: x
-        a.__name__ = 'a'
-        node = self.router.node(['x'])(a)
-
-        watcher = get_named_mock('watcher')
-        self.router.node(['n'], 'a')(watcher)
-
-        self.router.disable_routing()
-        node(n=1)
-        self.assertEqual(0, watcher.call_count)
-
-        self.router.enable_routing()
-        node(n=1)
-        self.assertEqual(1, watcher.call_count)
 
 
 class CeleryRouterTests(TestCase):
