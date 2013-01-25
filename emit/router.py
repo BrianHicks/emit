@@ -162,8 +162,11 @@ class Router(object):
         '''
         wrap the function in a transaction
         '''
-        # we don't really do anything to the function, so just return it
-        return lambda func: func
+        def inner(func):
+            'do processing, then return the function'
+            return func
+
+        return inner
 
     def resolve_node_modules(self):
         'import the modules specified in init'
