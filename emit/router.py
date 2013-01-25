@@ -188,7 +188,7 @@ class Router(object):
             self.add_transaction(transaction_name, name)
             if rollback:
                 self.add_rollback_function(
-                    transaction_name, name, rollback_handler
+                    transaction_name, name, rollback
                 )
 
             return func
