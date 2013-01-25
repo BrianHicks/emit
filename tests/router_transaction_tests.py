@@ -123,3 +123,12 @@ class AddRollbackFunctionTests(TestCase):
             },
             self.router.rollback_functions['test']
         )
+
+    def test_return_value(self):
+        'returns modified value'
+        self.assertEqual(
+            {'name': self.func},
+            self.router.add_rollback_function(
+                'test', 'name', self.func
+            )
+        )
