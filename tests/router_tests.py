@@ -240,7 +240,10 @@ class AddEntryPointTests(TestCase):
 
 
 class RegisterRouteTests(TestCase):
-    'test Router.register_route'
+    '''
+    test Router.register_route (and Router.register_ignore, and by extension
+    Router.regenerate_routes)
+    '''
     def setUp(self):
         self.router = Router()
 
@@ -294,6 +297,13 @@ class RegisterRouteTests(TestCase):
         self.assertEqual(
             ['origin'],
             [r.pattern for r in self.router.register_route(['origin'], 'destination')]
+        )
+
+    def test_returns_routes_ignore(self):
+        'register_ignore returns'
+        self.assertEqual(
+            ['origin'],
+            [r.pattern for r in self.router.register_ignore(['origin'], 'destination')]
         )
 
 
