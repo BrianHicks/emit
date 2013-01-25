@@ -25,3 +25,21 @@ class MetaTests(TestCase):
                 ValueError,
                 transaction, func
             )
+
+    def test_raises_if_no_handler(self):
+        'transaction decorator only works if there is a handler'
+        @self.router.node(('x',))
+        def func(msg):
+            return msg.x
+
+        self.router.transaction_handler = None
+        try:
+            self.assertRaisesRegexp(
+                ValueError, 'there is no transaction handler on the router',
+                self.router.transaction, 'test'
+            )
+        except AttributeError:
+            self.assertRaises(
+                ValueError,
+                self.router.transaction, 'test'
+            )
