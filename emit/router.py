@@ -262,6 +262,7 @@ class Router(object):
         self.regexes.setdefault(destination, [re.compile(origin) for origin in origins])
 
         self.regenerate_routes()
+        return self.regexes[destination]
 
     def register_ignore(self, origins, destination):
         '''
