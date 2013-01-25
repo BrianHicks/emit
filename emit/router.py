@@ -51,6 +51,7 @@ class Router(object):
         self.routing_enabled = True
 
         self.transaction_handler = transaction_handler
+        self.transactions = {}
 
     def __call__(self, **kwargs):
         '''\
@@ -411,6 +412,11 @@ class Router(object):
             func.__module__,
             func.__name__
         )
+
+    def add_to_transaction(self, transaction, name):
+        'add to a transaction'
+        self.transactions.setdefault(transaction, set()).add(name)
+        return self.transactions[transaction]
 
 
 class CeleryRouter(Router):
