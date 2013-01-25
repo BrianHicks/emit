@@ -10,7 +10,8 @@ from .message import Message, NoResult
 
 class Router(object):
     'A router object. Holds routes and references to functions for dispatch'
-    def __init__(self, message_class=None, node_modules=None, node_package=None):
+    def __init__(self, message_class=None, node_modules=None, node_package=None,
+                 transaction_handler=None):
         '''\
         Create a new router object. All parameters are optional.
 
@@ -45,6 +46,8 @@ class Router(object):
         self.logger.debug('Initialized Router')
 
         self.routing_enabled = True
+
+        self.transaction_handler = transaction_handler
 
     def __call__(self, **kwargs):
         '''\
