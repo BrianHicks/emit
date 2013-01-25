@@ -47,4 +47,5 @@ class Message(object):
 
 
 class NoResult(object):
+    'single value to return from a node to stop further processing'
     pass
