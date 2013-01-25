@@ -158,7 +158,7 @@ class Router(object):
 
         return outer
 
-    def transaction(self, name, rollback_handler):
+    def transaction(self, name, rollback_handler=None):
         '''
         wrap the function in a transaction
         '''
