@@ -57,7 +57,7 @@ class RouterTransactionTests(TestCase):
 
 
 class AddToTransactionTests(TestCase):
-    'tests for add_to_transaction'
+    'tests for add_transaction'
     def setUp(self):
         self.router = Router(
             transaction_handler=TransactionHandler
@@ -65,7 +65,7 @@ class AddToTransactionTests(TestCase):
 
     def test_add_transaction(self):
         'add_transaction adds to a set'
-        self.router.add_to_transaction('test', 'name')
+        self.router.add_transaction('test', 'name')
 
         self.assertEqual(
             set(['name']),
@@ -75,7 +75,7 @@ class AddToTransactionTests(TestCase):
     def test_existing_transaction(self):
         'add_transaction uses existing set'
         self.router.transactions['test'] = set(['existing'])
-        self.router.add_to_transaction('test', 'name')
+        self.router.add_transaction('test', 'name')
 
         self.assertEqual(
             set(['existing', 'name']),
@@ -86,7 +86,7 @@ class AddToTransactionTests(TestCase):
         'add_transaction returns new value'
         self.assertEqual(
             set(['name']),
-            self.router.add_to_transaction('test', 'name')
+            self.router.add_transaction('test', 'name')
         )
 
 

@@ -185,7 +185,7 @@ class Router(object):
                 )
                 raise ValueError('transactions may only be applied to nodes')
 
-            self.add_to_transaction(transaction_name, name)
+            self.add_transaction(transaction_name, name)
             if rollback:
                 self.add_rollback_function(
                     transaction_name, name, rollback_handler
@@ -420,7 +420,7 @@ class Router(object):
             func.__name__
         )
 
-    def add_to_transaction(self, transaction, name):
+    def add_transaction(self, transaction, name):
         'add to a transaction'
         self.transactions.setdefault(transaction, set()).add(name)
         return self.transactions[transaction]
