@@ -3,14 +3,14 @@ from unittest import TestCase
 
 from emit import Router
 from emit.message import Message
-from emit.transactions.base import TransactionHandler
+from emit.transactions.base import BaseTransactionHandler
 
 
 class RouterTransactionTests(TestCase):
     'tests for things outside of the actual transaction handling'
     def setUp(self):
         self.router = Router(
-            transaction_handler=TransactionHandler()
+            transaction_handler=BaseTransactionHandler()
         )
 
         self.func = lambda msg: msg.x
@@ -73,7 +73,7 @@ class AddToTransactionTests(TestCase):
     'tests for add_transaction'
     def setUp(self):
         self.router = Router(
-            transaction_handler=TransactionHandler()
+            transaction_handler=BaseTransactionHandler()
         )
 
     def test_add_transaction(self):
@@ -107,7 +107,7 @@ class AddRollbackFunctionTests(TestCase):
     'tests for Router.add_rollback_function'
     def setUp(self):
         self.router = Router(
-            transaction_handler=TransactionHandler()
+            transaction_handler=BaseTransactionHandler()
         )
         self.func = lambda x: x
 
@@ -151,7 +151,7 @@ class SetTransactionIdTests(TestCase):
     'tests for Router.set_transaction_id'
     def setUp(self):
         self.router = Router(
-            transaction_handler=TransactionHandler()
+            transaction_handler=BaseTransactionHandler()
         )
 
     def test_new(self):
