@@ -51,8 +51,14 @@ class AddTransactionTests(TestCase):
 
     def test_returns(self):
         'returns new value'
-
         self.assertEqual(
             set(['trans_name']),
             self.handler.add_transaction('trans_name', 'func_name')
         )
+
+
+class AddRollbackTests(TestCase):
+    'test for BaseTransactionHandler.add_rollback'
+    def setUp(self):
+        self.handler = BaseTransactionHandler()
+        self.func = lambda x: x
