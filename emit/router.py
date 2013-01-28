@@ -436,3 +436,18 @@ class CeleryRouter(Router):
             return options['celery_task'](node)
 
         return self.celery_task(node)
+
+
+class RQRouter(Router):
+    'Router specifically for RQ routing'
+    def __init__(self, redis_connection, *args, **kwargs):
+        '''\
+        Specific routing when using RQ
+
+        :param redis_connection: a redis connection to send to all the tasks
+                                 (can be overridden in :py:meth:`Router.node`.)
+        :type redis_connection: :py:class:`redis.Redis`
+        '''
+        super(RQRouter, self).__init__(*args, **kwargs)
+        self.redis_connection = redis_connection
+        self.logger.debug('Initialized RQ Router')
