@@ -1,3 +1,11 @@
+# WARNING
+
+You're on the "feature/transactions" branch. I started this in the hopes of
+implementing transactions. It turned out not to be as useful as I thought. The
+code in here is probably really out-of-date by the time you read this, but I'm
+keeping the branch as a reference, in case we do need to add something similar
+in the future.
+
 # Emit
 
 Emit is a Python library for realtime data processing. It can [distribute work
