@@ -8,3 +8,4 @@ anyjson==0.3.3
 
 # testing rq example
 rq==0.3.4
+redis==2.7.2
