@@ -16,7 +16,7 @@ class Message(object):
             )
 
     def __setattr__(self, attr, value):
-        if attr is 'bundle':
+        if attr == 'bundle':
             super(Message, self).__setattr__(attr, value)
         else:
             self.bundle[attr] = value
