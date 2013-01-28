@@ -25,6 +25,6 @@ to execute our task:
 
 .. literalinclude:: ../examples/multilang/graph.py
    :language: python
-   :lines: 10-12
+   :lines: 12-14
 
 After that, you can call your node and subscribe as normal.
