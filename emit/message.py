@@ -25,6 +25,10 @@ class Message(object):
             ', '.join('%s=%s' % pair for pair in self.bundle.items())
         )
 
+    def __eq__(self, other):
+        'test equality of two messages'
+        return self.bundle == other.bundle
+
     def as_dict(self):
         '''\
         representation of this message as a dictionary
@@ -43,4 +47,5 @@ class Message(object):
 
 
 class NoResult(object):
+    'single value to return from a node to stop further processing'
     pass

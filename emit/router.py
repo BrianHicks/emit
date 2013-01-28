@@ -41,7 +41,7 @@ class Router(object):
 
         # manage imported packages, lazily importing before the first message
         # is routed.
-        self.resolved_node_modules = False
+        self.resolved_node_modules = []
         self.node_modules = node_modules or []
         self.node_package = node_package
 
@@ -202,13 +202,17 @@ class Router(object):
 
     def resolve_node_modules(self):
         'import the modules specified in init'
-        if self.resolved_node_modules:
-            return
+        if not self.resolved_node_modules:
+            try:
+                self.resolved_node_modules = [
+                    importlib.import_module(mod, self.node_package)
+                    for mod in self.node_modules
+                ]
+            except ImportError:
+                self.resolved_node_modules = []
+                raise
 
-        for _import in self.node_modules:
-            importlib.import_module(_import, self.node_package)
-
-        self.resolved_node_modules = True
+        return self.resolved_node_modules
 
     def get_message_from_call(self, *args, **kwargs):
         '''\
@@ -258,7 +262,7 @@ class Router(object):
         self.register_route(subscribe_to, name)
 
         if ignore:
-            self.register_ignore(ingore, name)
+            self.register_ignore(ignore, name)
 
         if entry_point:
             self.add_entry_point(name)
@@ -273,6 +277,7 @@ class Router(object):
         :type destination: str
         '''
         self.routes.setdefault('__entry_point', set()).add(destination)
+        return self.routes['__entry_point']
 
     def register_route(self, origins, destination):
         '''
@@ -299,6 +304,7 @@ class Router(object):
         self.regexes.setdefault(destination, [re.compile(origin) for origin in origins])
 
         self.regenerate_routes()
+        return self.regexes[destination]
 
     def register_ignore(self, origins, destination):
         '''
@@ -320,6 +326,8 @@ class Router(object):
 
         self.ignore_regexes.setdefault(destination, [re.compile(origin) for origin in origins])
         self.regenerate_routes()
+
+        return self.ignore_regexes[destination]
 
     def regenerate_routes(self):
         'regenerate the routes after a new route is added'
@@ -403,14 +411,19 @@ class Router(object):
         :param result: return value from function. Will be converted to tuple.
         :type result: anything
 
+        :raises: :py:exc:`ValueError` if name has no associated fields
+
         :returns: :py:class:`dict`
         '''
         if not isinstance(result, tuple):
             result = tuple([result])
 
-        wrapped = dict(zip(self.fields[name], result))
-        if extra:
-            wrapped.update(extra)
+        try:
+            return dict(zip(self.fields[name], result))
+        except KeyError:
+            msg = '"%s" has no associated fields'
+            self.logger.exception(msg, name)
+            raise ValueError(msg % name)
 
         return wrapped
 

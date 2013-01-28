@@ -22,4 +22,15 @@ project may vary) insert the following lines::
 Setting Up Logging in Django
 ----------------------------
 
-Set up a logger for ``emit``. Examples to come.
+In your logging config, add a logger for "emit". Like so::
+
+    LOGGING = {
+        # snip formatters, filters, handlers, etc
+        'loggers': {
+            # other loggers here
+            'emit': {
+                'handlers': ['console'],
+                'level': 'INFO',
+            }
+        }
+    }

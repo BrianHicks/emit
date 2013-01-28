@@ -65,6 +65,9 @@ Message
 .. autoclass:: Message
    :members:
 
+.. autoclass:: NoResult
+   :members:
+
 Multilang
 ---------
 

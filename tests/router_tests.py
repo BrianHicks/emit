@@ -1,5 +1,6 @@
 'tests for emit/router.py'
 from __future__ import print_function
+import re
 from unittest import TestCase
 
 from celery import Celery, Task
@@ -26,6 +27,356 @@ def get_named_mock(name):
 
 def prefix(name):
     return '%s.%s' % (__name__, name)
+
+
+class ResolveNodeModulesTests(TestCase):
+    'tests for Router.resolve_node_modules'
+    def setUp(self):
+        'set up a patch'
+        importlib_patch = mock.patch('emit.router.importlib')
+        self.fake_importlib = importlib_patch.start()
+
+        def maybe_raise(imp, pkg):
+            if imp == 'bad':
+                raise ImportError('bad test import')
+
+            return imp
+
+        self.fake_importlib.import_module.side_effect = maybe_raise
+
+        self.router = Router(node_modules=['test'], node_package='pkg')
+
+    def tearDown(self):
+        self.fake_importlib.stop()
+
+    def test_initial(self):
+        'initial state is empty'
+        self.assertEqual([], self.router.resolved_node_modules)
+
+    def test_imports_single(self):
+        'imports a single node module'
+        self.router.resolve_node_modules()
+        self.assertEqual(['test'], self.router.resolved_node_modules)
+
+    def test_imports_multi(self):
+        'imports multiple node modules'
+        self.router.node_modules = ['test1', 'test2']
+        self.router.resolve_node_modules()
+        self.assertEqual(['test1', 'test2'], self.router.resolved_node_modules)
+
+    def test_uses_node_package(self):
+        'uses node_package'
+        self.router.resolve_node_modules()
+        self.fake_importlib.import_module.assert_called_with('test', 'pkg')
+
+    def test_called_once(self):
+        'called once'
+        self.router.resolve_node_modules()
+        self.router.resolve_node_modules()
+
+        self.assertEqual(1, self.fake_importlib.import_module.call_count)
+
+    def test_imports_completely(self):
+        'imports completely (fails all on ImportError)'
+        self.router.node_modules = ['test1', 'bad', 'test2']
+
+        self.assertRaises(ImportError, self.router.resolve_node_modules)
+
+        self.assertEqual([], self.router.resolved_node_modules)
+
+
+class GetMessageFromCallTests(TestCase):
+    'tests for Router.get_message_from_call'
+    def setUp(self):
+        self.router = Router()
+
+    def test_from_args(self):
+        'gets correct message from args'
+        d = {'test': 1}
+        self.assertEqual(
+            Message(d),
+            self.router.get_message_from_call(d)
+        )
+
+    def test_from_kwargs(self):
+        'gets correct message from kwargs'
+        d = {'test': 1}
+        self.assertEqual(
+            Message(d),
+            self.router.get_message_from_call(**d)
+        )
+
+    def test_two_args(self):
+        'two args should raise a TypeError'
+        self.assertRaises(TypeError, self.router.get_message_from_call, 1, 2)
+
+    def test_mixed_args_kwargs(self):
+        'mixed args and kwargs'
+        self.assertRaises(TypeError, self.router.get_message_from_call, 1, x=2)
+
+    def test_message_class(self):
+        'a custom message class will be applied'
+        class Custom(Message):
+            pass
+
+        self.router.message_class = Custom
+        try:
+            self.assertIsInstance(
+                self.router.get_message_from_call(x=1),
+                Custom
+            )
+        except AttributeError:  # python 2.6
+            self.assertTrue(isinstance(
+                self.router.get_message_from_call(x=1),
+                Custom
+            ), 'result of get_message_from_call is not a Custom instance')
+
+
+class RegisterTests(TestCase):
+    'test Router.register'
+    def setUp(self):
+        self.router = Router()
+
+        # variables to use when testing
+        self.name = 'test_name'
+        self.func = lambda x: x
+        self.fields = ('x',)
+        self.subscribe_to = ['x', 'y']
+        self.ignore = 'test_ignore'
+
+    def get_args(self, ignore=None, entry_point=False):
+        'get arguments for register'
+        return (
+            self.name, self.func, self.fields, self.subscribe_to,
+            entry_point, ignore
+        )
+
+    def test_adds_to_fields(self):
+        'register adds the fields to the fields dict'
+        self.router.register(*self.get_args())
+
+        self.assertEqual(
+            self.fields,
+            self.router.fields[self.name]
+        )
+
+    def test_adds_to_functions(self):
+        'register adds to the functions dict'
+        self.router.register(*self.get_args())
+
+        self.assertEqual(
+            self.func,
+            self.router.functions[self.name]
+        )
+
+    @mock.patch('emit.router.Router.register_route', autospec=True)
+    def test_registers_route(self, fake_rr):
+        'register calls register_route'
+        self.router.register(*self.get_args())
+        fake_rr.assert_called_once_with(
+            self.router, self.subscribe_to, self.name
+        )
+
+    @mock.patch('emit.router.Router.register_ignore', autospec=True)
+    def test_does_not_call_ignore(self, fake_ignore):
+        'register does not call register_ignore if it is not provided'
+        self.router.register(*self.get_args(ignore=None))
+        self.assertEqual(0, fake_ignore.call_count)
+
+    @mock.patch('emit.router.Router.register_ignore', autospec=True)
+    def test_calls_ignore(self, fake_ignore):
+        'register calls register_ignore if it is provided'
+        self.router.register(*self.get_args(ignore=self.ignore))
+        fake_ignore.assert_called_once_with(
+            self.router, self.ignore, self.name
+        )
+
+    @mock.patch('emit.router.Router.add_entry_point', autospec=True)
+    def test_does_not_call_add_entry_point(self, fake_aep):
+        'register does not call add_entry_point if False'
+        self.router.register(*self.get_args(entry_point=False))
+        self.assertEqual(0, fake_aep.call_count)
+
+    @mock.patch('emit.router.Router.add_entry_point', autospec=True)
+    def test_calls_add_entry_point(self, fake_aep):
+        'register calls add_entry_point if True'
+        self.router.register(*self.get_args(entry_point=True))
+        fake_aep.assert_called_once_with(self.router, self.name)
+
+
+class AddEntryPointTests(TestCase):
+    'tests for Router.add_entry_point'
+    def setUp(self):
+        self.router = Router()
+
+    def test_returns_routes(self):
+        'add_entry_point returns routes'
+        self.assertEqual(
+            set(['test']),
+            self.router.add_entry_point('test')
+        )
+
+    def test_when_blank(self):
+        'adds a new route and key in the routing dict'
+        try:
+            self.assertNotIn('__entry_point', self.router.routes)
+        except AttributeError:  # python 2.6
+            self.assertTrue('__entry_point' not in self.router.routes)
+
+        self.router.add_entry_point('test')
+
+        self.assertEqual(set(['test']), self.router.routes['__entry_point'])
+
+    def test_when_set(self):
+        'adds a new route to the existing key in the routing dict'
+        self.router.routes['__entry_point'] = set(['existing'])
+
+        self.router.add_entry_point('test')
+
+        self.assertEqual(
+            set(['test', 'existing']),
+            self.router.routes['__entry_point']
+        )
+
+
+class RegisterRouteTests(TestCase):
+    '''
+    test Router.register_route (and Router.register_ignore, and by extension
+    Router.regenerate_routes)
+    '''
+    def setUp(self):
+        self.router = Router()
+
+    def test_register_route_regex(self):
+        'adding routes with a regular expression route correctly'
+        self.router.register_route('__entry_point', 'test')
+        self.router.register_route('.+', 'test2')
+
+        self.assertEqual(
+            {'test': set(['test2'])},
+            self.router.routes
+        )
+
+    def test_register_route_before(self):
+        'adding routes after a regex has been added also match'
+        self.router.register_route('.+', 'test2')
+        self.router.register_route('__entry_point', 'test')
+
+        self.assertEqual(
+            {'test': set(['test2'])},
+            self.router.routes
+        )
+
+    def test_unsubscribed_routes_are_added(self):
+        'routes which have no subscribers are still added later'
+        self.router.register_route('.+', 'test2')
+        self.router.register_route(None, 'test')
+
+        self.assertEqual(
+            {'test': set(['test2'])},
+            self.router.routes
+        )
+
+    def test_ignored_routes(self):
+        'ignored routes are not added'
+        # add two base routes
+        self.router.register_route(None, 'test1')
+        self.router.register_route(None, 'test2')
+
+        # add ignore route
+        self.router.register_route(['test1', 'test2'], 'test3')
+        self.router.register_ignore('test2', 'test3')
+
+        self.assertEqual(
+            {'test1': set(['test3']), 'test2': set()},
+            self.router.routes
+        )
+
+    def test_returns_routes(self):
+        'register_route returns the currently registered routes'
+        self.assertEqual(
+            ['origin'],
+            [r.pattern for r in self.router.register_route(['origin'], 'destination')]
+        )
+
+    def test_returns_routes_ignore(self):
+        'register_ignore returns'
+        self.assertEqual(
+            ['origin'],
+            [r.pattern for r in self.router.register_ignore(['origin'], 'destination')]
+        )
+
+
+class WrapResultTests(TestCase):
+    'tests for Router.wrap_result'
+    def setUp(self):
+        self.router = Router()
+        self.router.fields['single'] = ('a',)
+        self.router.fields['multi'] = ('a', 'b')
+
+    def test_wraps_single(self):
+        'wraps a single value'
+        self.assertEqual(
+            {'a': 1},
+            self.router.wrap_result('single', 1)
+        )
+
+    def test_wraps_multiple(self):
+        'wraps multiple values'
+        self.assertEqual(
+            {'a': 1, 'b': 2},
+            self.router.wrap_result('multi', (1, 2))
+        )
+
+    def test_raises_valueerror(self):
+        'raises a ValueError if the keys are not present'
+        try:
+            self.assertRaisesRegexp(
+                ValueError, '"dne" has no associated fields',
+                self.router.wrap_result, 'dne', 1
+            )
+        except AttributeError:  # python 2.6
+            self.assertRaises(
+                ValueError,
+                self.router.wrap_result, 'dne', 1
+            )
+
+
+class DisableEnableRoutingTests(TestCase):
+    'tests for (disable|enable)_routing'
+    def setUp(self):
+        self.router = Router()
+
+    def test_disable_routing(self):
+        'disable routing disables routing'
+        a = lambda x: x
+        a.__name__ = 'a'
+        node = self.router.node(['x'])(a)
+
+        watcher = get_named_mock('watcher')
+        self.router.node(['n'], 'a')(watcher)
+
+        self.router.disable_routing()
+        node(n=1)
+
+        self.assertEqual(0, watcher.call_count)
+
+    def test_enable_routing(self):
+        'enable routing re-enables routing'
+        a = lambda x: x
+        a.__name__ = 'a'
+        node = self.router.node(['x'])(a)
+
+        watcher = get_named_mock('watcher')
+        self.router.node(['n'], 'a')(watcher)
+
+        self.router.disable_routing()
+        node(n=1)
+        self.assertEqual(0, watcher.call_count)
+
+        self.router.enable_routing()
+        node(n=1)
+        self.assertEqual(1, watcher.call_count)
 
 
 class RouterTests(TestCase):
@@ -167,35 +518,6 @@ class RouterTests(TestCase):
         except AttributeError:  # python 2.6
             self.assertRaises(RuntimeError, self.router, x=1)
 
-    @mock.patch('emit.router.importlib')
-    def test_registers_node_modules(self, mock_importlib):
-        'register node modules in init (instead of importing right away)'
-        r = Router(node_modules=['test'], node_package='test')
-
-        self.assertEqual(['test'], r.node_modules)
-        self.assertEqual('test', r.node_package)
-        self.assertEqual(False, r.resolved_node_modules)
-        self.assertEqual(0, mock_importlib.import_module.call_count)
-
-    @mock.patch('emit.router.importlib')
-    def test_imports_with_resolve_node_modules(self, mock_importlib):
-        'resolves imports'
-        r = Router(node_modules=['test'], node_package='test')
-        r.resolve_node_modules()
-
-        mock_importlib.import_module.assert_called_with('test', 'test')
-
-    @mock.patch('emit.router.importlib')
-    def test_imports_only_once(self, mock_importlib):
-        'resolves imports only once'
-        r = Router(node_modules=['test'], node_package='test')
-
-        # twice!
-        r.resolve_node_modules()
-        r.resolve_node_modules()
-
-        self.assertEqual(1, mock_importlib.import_module.call_count)
-
     def test_no_result_generator(self):
         'a generator returning NoResult should only pass on non-NoResults'
         @self.router.node(['n'])
@@ -222,82 +544,6 @@ class RouterTests(TestCase):
         func(n=1)
 
         self.assertEqual(0, watcher.call_count)
-
-    def test_disable_routing(self):
-        'disable routing disables routing'
-        a = lambda x: x
-        a.__name__ = 'a'
-        node = self.router.node(['x'])(a)
-
-        watcher = get_named_mock('watcher')
-        self.router.node(['n'], 'a')(watcher)
-
-        self.router.disable_routing()
-        node(n=1)
-
-        self.assertEqual(0, watcher.call_count)
-
-    def test_enable_routing(self):
-        'enable routing re-enables routing'
-        a = lambda x: x
-        a.__name__ = 'a'
-        node = self.router.node(['x'])(a)
-
-        watcher = get_named_mock('watcher')
-        self.router.node(['n'], 'a')(watcher)
-
-        self.router.disable_routing()
-        node(n=1)
-        self.assertEqual(0, watcher.call_count)
-
-        self.router.enable_routing()
-        node(n=1)
-        self.assertEqual(1, watcher.call_count)
-
-    def test_register_route_regex(self):
-        'adding routes with a regular expression route correctly'
-        self.router.register_route('__entry_point', 'test')
-        self.router.register_route('.+', 'test2')
-
-        self.assertEqual(
-            {'test': set(['test2'])},
-            self.router.routes
-        )
-
-    def test_register_route_before(self):
-        'adding routes after a regex has been added also match'
-        self.router.register_route('.+', 'test2')
-        self.router.register_route('__entry_point', 'test')
-
-        self.assertEqual(
-            {'test': set(['test2'])},
-            self.router.routes
-        )
-
-    def test_unsubscribed_routes_are_added(self):
-        'routes which have no subscribers are still added later'
-        self.router.register_route('.+', 'test2')
-        self.router.register_route(None, 'test')
-
-        self.assertEqual(
-            {'test': set(['test2'])},
-            self.router.routes
-        )
-
-    def test_ignored_routes(self):
-        'ignored routes are not added'
-        # add two base routes
-        self.router.register_route(None, 'test1')
-        self.router.register_route(None, 'test2')
-
-        # add ignore route
-        self.router.register_route(['test1', 'test2'], 'test3')
-        self.router.register_ignore('test2', 'test3')
-
-        self.assertEqual(
-            {'test1': set(['test3']), 'test2': set()},
-            self.router.routes
-        )
 
 
 class CeleryRouterTests(TestCase):

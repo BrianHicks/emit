@@ -12,6 +12,27 @@ class MessageTests(TestCase):
         x = Message(x=1)
         self.assertEqual(1, x.x)
 
+    def test_access_missing(self):
+        'accessing attributes that do not exist'
+        x = Message(x=1)
+        try:
+            self.assertRaisesRegex(
+                AttributeError, '"y" is not included in this message',
+                getattr, x, 'y'
+            )
+        except AttributeError:  # python 2.6
+            self.assertRaises(
+                AttributeError,
+                getattr, x, 'y'
+            )
+
+    def test_repr(self):
+        x = Message(x=1, y=2)
+        self.assertEqual(
+            'Message(y=2, x=1)',
+            repr(x)
+        )
+
     def test_dir(self):
         'dir includes attributes'
         x = Message(x=1, y=2)
@@ -39,3 +60,11 @@ class MessageTests(TestCase):
             json.dumps(d),
             x.as_json()
         )
+
+    def test_equality(self):
+        'two messages are equal if their bundles are equal'
+        d = {'x': 1, 'y': 2}
+        x = Message(**d)
+        y = Message(**d)
+
+        self.assertEqual(x, y)
