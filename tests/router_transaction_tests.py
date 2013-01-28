@@ -49,12 +49,12 @@ class RouterTransactionTests(TestCase):
 
     def test_adds_to_transaction(self):
         'transaction adds the name to transactions'
-        self.router.transaction('test')(
+        self.router.transaction('test_transaction')(
             self.router.node(('x',))(self.func)
         )
         self.assertEqual(
-            set([__name__ + '.test_func']),
-            self.router.transactions['test']
+            set(['test_transaction']),
+            self.router.transactions[__name__ + '.test_func']
         )
 
     def test_adds_rollback_function(self):
@@ -77,28 +77,28 @@ class AddToTransactionTests(TestCase):
 
     def test_add_transaction(self):
         'add_transaction adds to a set'
-        self.router.add_transaction('test', 'name')
+        self.router.add_transaction('test_transaction', 'name')
 
         self.assertEqual(
-            set(['name']),
-            self.router.transactions['test']
+            set(['test_transaction']),
+            self.router.transactions['name']
         )
 
     def test_existing_transaction(self):
         'add_transaction uses existing set'
-        self.router.transactions['test'] = set(['existing'])
-        self.router.add_transaction('test', 'name')
+        self.router.transactions['name'] = set(['existing_transaction'])
+        self.router.add_transaction('test_transaction', 'name')
 
         self.assertEqual(
-            set(['existing', 'name']),
-            self.router.transactions['test']
+            set(['existing_transaction', 'test_transaction']),
+            self.router.transactions['name']
         )
 
     def test_return_value(self):
         'add_transaction returns new value'
         self.assertEqual(
-            set(['name']),
-            self.router.add_transaction('test', 'name')
+            set(['test_transaction']),
+            self.router.add_transaction('test_transaction', 'name')
         )
 
 
