@@ -88,7 +88,10 @@ class Router(object):
                 result = func(message)
             except Exception:
                 self.logger.exception('"%s" had an error', name)
-                self.transaction_handler.rollback(transaction, name)
+
+                if transaction:
+                    self.transaction_handler.rollback(transaction, name)
+
                 raise
 
             if transaction:
