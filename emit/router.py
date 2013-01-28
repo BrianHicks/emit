@@ -466,16 +466,11 @@ class RQRouter(Router):
         from rq import Queue
         from rq.decorators import job
 
-        connection = options.get('connection', self.redis_connection)
         job_kwargs = {
-            'queue': options.get('queue', None),
+            'queue': options.get('queue', 'default'),
+            'connection': options.get('connection', self.redis_connection),
             'timeout': options.get('timeout', None),
             'result_ttl': options.get('result_ttl', 500),
-            'async': options.get('async', True)
         }
-        if job_kwargs['queue'] is not None:
-            job_kwargs['connection'] = connection
-        else:
-            job_kwargs['queue'] = Queue(connection)
 
         return job(**job_kwargs)(node)
