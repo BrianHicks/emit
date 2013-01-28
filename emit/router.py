@@ -7,6 +7,13 @@ from types import GeneratorType
 
 from .message import Message, NoResult
 
+try:
+    from rq import Queue
+    from rq.decorators import job
+except ImportError:
+    Queue = None
+    job = None
+
 
 class Router(object):
     'A router object. Holds routes and references to functions for dispatch'
@@ -463,9 +470,6 @@ class RQRouter(Router):
         we have the option to construct nodes here, so we can use different
         queues for nodes without having to have different queue objects.
         '''
-        from rq import Queue
-        from rq.decorators import job
-
         job_kwargs = {
             'queue': options.get('queue', 'default'),
             'connection': options.get('connection', self.redis_connection),
