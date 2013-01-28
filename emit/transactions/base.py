@@ -1,4 +1,4 @@
-class TransactionHandler(object):
+class BaseTransactionHandler(object):
     'base transaction handler'
     def __init__(self):
         self.transactions = {}
