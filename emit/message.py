@@ -15,6 +15,12 @@ class Message(object):
                 '"%s" is not included in this message' % attr
             )
 
+    def __setattr__(self, attr, value):
+        if attr is 'bundle':
+            super(Message, self).__setattr__(attr, value)
+        else:
+            self.bundle[attr] = value
+
     def __dir__(self):
         'get directory of attributes. include bundle.'
         return sorted(list(['bundle'] + list(self.bundle.keys())))
