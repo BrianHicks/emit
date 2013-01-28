@@ -422,8 +422,8 @@ class Router(object):
 
     def add_transaction(self, transaction, name):
         'add to a transaction'
-        self.transactions.setdefault(transaction, set()).add(name)
-        return self.transactions[transaction]
+        self.transactions.setdefault(name, set()).add(transaction)
+        return self.transactions[name]
 
     def add_rollback_function(self, transaction, name, func):
         'add a rollback handler to a transaction'
