@@ -394,7 +394,7 @@ class Router(object):
         self.logger.debug('calling %r directly', func)
         return func(_origin=origin, **message)
 
-    def wrap_result(self, name, result):
+    def wrap_result(self, name, result, extra=None):
         '''
         Wrap a result from a function with it's stated fields
 
@@ -408,7 +408,11 @@ class Router(object):
         if not isinstance(result, tuple):
             result = tuple([result])
 
-        return dict(zip(self.fields[name], result))
+        wrapped = dict(zip(self.fields[name], result))
+        if extra:
+            wrapped.update(extra)
+
+        return wrapped
 
     def get_name(self, func):
         '''
