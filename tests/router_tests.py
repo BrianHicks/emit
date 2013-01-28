@@ -595,13 +595,23 @@ class RQRouterTests(TestCase):
         self.redis = Redis()
         self.router = RQRouter(self.redis)
 
+        self.func = lambda n: n
+        self.func.__name__ = 'test_function'
+
     @mock.patch('emit.router.job')
     def test_registers_as_job(self, fake_job):
         'registers the task with the job decorator'
-        func = lambda n: n
-        func.__name__ = 'test_function'
-
-        self.router.node(tuple())(func)
+        self.router.node(tuple())(self.func)
 
         decorator = fake_job()
         self.assertEqual(1, decorator.call_count)
+
+    @mock.patch('emit.router.job')
+    def test_accepts_queue(self, fake_job):
+        'accepts queue'
+        self.router.node(tuple(), queue='test')(self.func)
+
+        fake_job.assert_called_with(
+            queue='test', connection=self.redis,
+            timeout=None, result_ttl=500
+        )
