@@ -419,11 +419,14 @@ class Router(object):
             result = tuple([result])
 
         try:
-            return dict(zip(self.fields[name], result))
+            wrapped = dict(zip(self.fields[name], result))
         except KeyError:
             msg = '"%s" has no associated fields'
             self.logger.exception(msg, name)
             raise ValueError(msg % name)
+
+        if extra:
+            wrapped.update(extra)
 
         return wrapped
 
