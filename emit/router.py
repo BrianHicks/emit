@@ -74,8 +74,13 @@ class Router(object):
         def wrapped(*args, **kwargs):
             'wrapped version of func'
             message = self.get_message_from_call(*args, **kwargs)
+
             self.logger.info('calling "%s" with %r', name, message)
-            result = func(message)
+            try:
+                result = func(message)
+            except Exception:
+                self.logger.exception('"%s" had an error', name)
+                raise
 
             # functions can return multiple values ("emit" multiple times)
             # by yielding instead of returning. Handle this case by making
