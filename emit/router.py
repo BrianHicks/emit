@@ -76,12 +76,23 @@ class Router(object):
             'wrapped version of func'
             message = self.get_message_from_call(*args, **kwargs)
 
+            # set transaction properties
+            if name in self.transactions:
+                message, transaction = self.set_transaction_id(message)
+                self.transaction_handler.start_call(transaction, name, message)
+            else:
+                transaction = None
+
             self.logger.info('calling "%s" with %r', name, message)
             try:
                 result = func(message)
             except Exception:
                 self.logger.exception('"%s" had an error', name)
+                self.transaction_handler.rollback(transaction, name)
                 raise
+
+            if transaction:
+                self.transaction_handler.finish_call(transaction, name)
 
             # functions can return multiple values ("emit" multiple times)
             # by yielding instead of returning. Handle this case by making
