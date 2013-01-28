@@ -10,7 +10,7 @@ class RouterTransactionTests(TestCase):
     'tests for things outside of the actual transaction handling'
     def setUp(self):
         self.router = Router(
-            transaction_handler=TransactionHandler
+            transaction_handler=TransactionHandler()
         )
 
         self.func = lambda msg: msg.x
@@ -73,7 +73,7 @@ class AddToTransactionTests(TestCase):
     'tests for add_transaction'
     def setUp(self):
         self.router = Router(
-            transaction_handler=TransactionHandler
+            transaction_handler=TransactionHandler()
         )
 
     def test_add_transaction(self):
@@ -107,7 +107,7 @@ class AddRollbackFunctionTests(TestCase):
     'tests for Router.add_rollback_function'
     def setUp(self):
         self.router = Router(
-            transaction_handler=TransactionHandler
+            transaction_handler=TransactionHandler()
         )
         self.func = lambda x: x
 
@@ -151,7 +151,7 @@ class SetTransactionIdTests(TestCase):
     'tests for Router.set_transaction_id'
     def setUp(self):
         self.router = Router(
-            transaction_handler=TransactionHandler
+            transaction_handler=TransactionHandler()
         )
 
     def test_new(self):
