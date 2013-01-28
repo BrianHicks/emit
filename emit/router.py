@@ -410,6 +410,8 @@ class Router(object):
         :type name: :py:class:`str`
         :param result: return value from function. Will be converted to tuple.
         :type result: anything
+        :param extra: extra information in the result
+        :type extra: :py:class:`dict`
 
         :raises: :py:exc:`ValueError` if name has no associated fields
 
