@@ -26,6 +26,13 @@ class MessageTests(TestCase):
                 getattr, x, 'y'
             )
 
+    def test_setattr(self):
+        'setattr works as expected (bundling key)'
+        x = Message()
+        x.x = 1
+
+        self.assertEqual(1, x.bundle['x'])
+
     def test_repr(self):
         x = Message(x=1, y=2)
         self.assertEqual(
