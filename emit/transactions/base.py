@@ -16,14 +16,14 @@ class BaseTransactionHandler(object):
         'set a transaction ID'
         raise NotImplementedError
 
-    def start_call(self, transaction, name, message):
+    def start_call(self, transaction_id, name, message):
         'start a transactional call'
         raise NotImplementedError
 
-    def finish_call(self, transaction, name):
+    def finish_call(self, transaction_id, name):
         'finish a call'
         raise NotImplementedError
 
-    def rollback(self, transaction, name):
+    def rollback(self, transaction_id, name):
         'roll back a transaction'
         raise NotImplementedError
