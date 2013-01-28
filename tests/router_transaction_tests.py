@@ -2,6 +2,7 @@
 from unittest import TestCase
 
 from emit import Router
+from emit.message import Message
 from emit.transactions.base import TransactionHandler
 
 
@@ -144,3 +145,28 @@ class AddRollbackFunctionTests(TestCase):
                 'test', 'name', self.func
             )
         )
+
+
+class SetTransactionIdTests(TestCase):
+    'tests for Router.set_transaction_id'
+    def setUp(self):
+        self.router = Router(
+            transaction_handler=TransactionHandler
+        )
+
+    def test_new(self):
+        'sets a new transaction ID'
+        msg = Message({'a': 1})
+        self.assertFalse(hasattr(msg, '_transaction'))
+
+        msg, _id = self.router.set_transaction_id(msg)
+
+        self.assertTrue(hasattr(msg, '_transaction'))
+
+    def test_existing(self):
+        'gets an existing transaction id'
+        msg = Message({'a': 1, '_transaction': 'test'})
+
+        new, _id = self.router.set_transaction_id(msg)
+        self.assertEqual(msg, new)
+        self.assertEqual('test', msg._transaction)
