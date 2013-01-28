@@ -69,40 +69,6 @@ class RouterTransactionTests(TestCase):
         )
 
 
-class AddToTransactionTests(TestCase):
-    'tests for add_transaction'
-    def setUp(self):
-        self.router = Router(
-            transaction_handler=BaseTransactionHandler()
-        )
-
-    def test_add_transaction(self):
-        'add_transaction adds to a set'
-        self.router.add_transaction('test_transaction', 'name')
-
-        self.assertEqual(
-            set(['test_transaction']),
-            self.router.transactions['name']
-        )
-
-    def test_existing_transaction(self):
-        'add_transaction uses existing set'
-        self.router.transactions['name'] = set(['existing_transaction'])
-        self.router.add_transaction('test_transaction', 'name')
-
-        self.assertEqual(
-            set(['existing_transaction', 'test_transaction']),
-            self.router.transactions['name']
-        )
-
-    def test_return_value(self):
-        'add_transaction returns new value'
-        self.assertEqual(
-            set(['test_transaction']),
-            self.router.add_transaction('test_transaction', 'name')
-        )
-
-
 class AddRollbackFunctionTests(TestCase):
     'tests for Router.add_rollback_function'
     def setUp(self):
