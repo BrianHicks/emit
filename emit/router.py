@@ -4,6 +4,7 @@ import importlib
 import logging
 import re
 from types import GeneratorType
+import uuid
 
 from .message import Message, NoResult
 
@@ -458,6 +459,16 @@ class Router(object):
             name: func
         })
         return self.rollback_functions[transaction]
+
+    def set_transaction_id(self, msg):
+        'set the transaction ID on a message'
+        if hasattr(msg, '_transaction'):
+            return msg, msg._transaction
+
+        _id = uuid.uuid4().hex
+        msg._transaction = _id
+
+        return msg, _id
 
 
 class CeleryRouter(Router):
