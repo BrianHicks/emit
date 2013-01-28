@@ -341,6 +341,13 @@ class WrapResultTests(TestCase):
                 self.router.wrap_result, 'dne', 1
             )
 
+    def test_extra(self):
+        'accepts extra information'
+        self.assertEqual(
+            {'a': 1, 'key': 'value'},
+            self.router.wrap_result('single', (1,), extra={'key': 'value'})
+        )
+
 
 class DisableEnableRoutingTests(TestCase):
     'tests for (disable|enable)_routing'
