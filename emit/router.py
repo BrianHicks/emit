@@ -53,7 +53,8 @@ class Router(object):
 
         self.transaction_handler = transaction_handler
         self.transactions = {}
-        self.rollback_functions = {}
+        self.rollback_functions = self.transaction_handler.rollback_functions \
+            if self.transaction_handler else {}
 
     def __call__(self, **kwargs):
         '''\
