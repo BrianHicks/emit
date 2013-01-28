@@ -8,9 +8,9 @@ from emit.transactions.base import BaseTransactionHandler
 def test_notimplemented():
     'test methods which have to be implemented by subclasses'
     methods = [
-        ('start_call', ('a', 'b', 'c')),
-        ('finish_call', ('a', 'b')),
-        ('rollback', ('a', 'b')),
+        ('start_call', ('transaction_name', 'name', 'message')),
+        ('finish_call', ('transaction', 'name')),
+        ('rollback', ('transaction', 'name')),
     ]
     for method, args in methods:
         yield single_notimplemented, method, args
