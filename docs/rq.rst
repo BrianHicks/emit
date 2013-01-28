@@ -63,7 +63,7 @@ We just need to start the RQ worker:
    :language: sh
 
 And enter the following on the command line to start something fun processing
-(if you'd like, the relevant code is in ``examples/celery/kickoff.py`` in the
+(if you'd like, the relevant code is in ``examples/rq/kickoff.py`` in the
 project directory, start it and get a prompt with ``ipython -i kickoff.py``):
 
 .. literalinclude:: ../examples/rq/kickoff.py
