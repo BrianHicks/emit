@@ -451,3 +451,31 @@ class RQRouter(Router):
         super(RQRouter, self).__init__(*args, **kwargs)
         self.redis_connection = redis_connection
         self.logger.debug('Initialized RQ Router')
+
+    def dispatch(self, origin, destination, message):
+        'dispatch through RQ'
+        func = self.functions[destination]
+        self.logger.debug('enqueueing %r', func)
+        return func.delay(_origin=origin, **message)
+
+    def wrap_node(self, node, options):
+        '''
+        we have the option to construct nodes here, so we can use different
+        queues for nodes without having to have different queue objects.
+        '''
+        from rq import Queue
+        from rq.decorators import job
+
+        connection = options.get('connection', self.redis_connection)
+        job_kwargs = {
+            'queue': options.get('queue', None),
+            'timeout': options.get('timeout', None),
+            'result_ttl': options.get('result_ttl', 500),
+            'async': options.get('async', True)
+        }
+        if job_kwargs['queue'] is not None:
+            job_kwargs['connection'] = connection
+        else:
+            job_kwargs['queue'] = Queue(connection)
+
+        return job(**job_kwargs)(node)
