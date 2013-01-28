@@ -12,7 +12,7 @@ Setting up RQ
 
 Create an ``app.py`` file for your RQ Router initializaition code to live in:
 
-.. literalinclude:: ../examples/rq.py
+.. literalinclude:: ../examples/rq/app.py
    :language: python
    :linenos:
 
