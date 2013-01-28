@@ -5,8 +5,9 @@ from unittest import TestCase
 
 from celery import Celery, Task
 import mock
+from redis import Redis
 
-from emit.router import Router, CeleryRouter
+from emit.router import Router, CeleryRouter, RQRouter
 from emit.message import Message, NoResult
 
 
@@ -586,3 +587,21 @@ class CeleryRouterTests(TestCase):
         self.router(x=1)
 
         node.delay.assert_called_with(_origin='__entry_point', x=1)
+
+
+class RQRouterTests(TestCase):
+    'tests for using RQ to route nodes'
+    def setUp(self):
+        self.redis = Redis()
+        self.router = RQRouter(self.redis)
+
+    @mock.patch('emit.router.job')
+    def test_registers_as_job(self, fake_job):
+        'registers the task with the job decorator'
+        func = lambda n: n
+        func.__name__ = 'test_function'
+
+        self.router.node(tuple())(func)
+
+        decorator = fake_job()
+        self.assertEqual(1, decorator.call_count)
