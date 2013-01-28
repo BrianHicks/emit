@@ -6,7 +6,9 @@ class BaseTransactionHandler(object):
 
     def add_transaction(self, transaction_name, name):
         'add a transaction to transactions'
-        raise NotImplementedError
+        transaction_names = self.transactions.setdefault(name, set())
+        transaction_names.add(transaction_name)
+        return transaction_names
 
     def add_rollback(self, transaction_name, name, rollback):
         'add a rollback function'
