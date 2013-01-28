@@ -2,6 +2,14 @@ class TransactionHandler(object):
     def __init__(self):
         self.rollback_functions = {}
 
+    def add_transaction(self, transaction_name, name):
+        'add a transaction to transactions'
+        raise NotImplementedError
+
+    def add_rollback(self, transaction_name, name, rollback):
+        'add a rollback function'
+        raise NotImplementedError
+
     def set_transaction_id(self, message):
         'set a transaction ID'
         raise NotImplementedError
