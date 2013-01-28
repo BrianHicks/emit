@@ -1,5 +1,7 @@
 class TransactionHandler(object):
+    'base transaction handler'
     def __init__(self):
+        self.transactions = {}
         self.rollback_functions = {}
 
     def add_transaction(self, transaction_name, name):
