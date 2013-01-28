@@ -24,6 +24,7 @@ Contents:
 
    getting-started
    celery
+   rq
    multilang
    regex-routing
    command-line-utilities
