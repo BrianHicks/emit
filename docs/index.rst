@@ -16,8 +16,7 @@ Contents:
    :maxdepth: 1
 
    getting-started
-   celery
-   rq
+   distributing-work/index
    multilang
    regex-routing
    command-line-utilities
