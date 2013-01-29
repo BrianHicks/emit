@@ -48,9 +48,9 @@ Next, we define a function to split apart a document on spaces to get words:
    :language: python
    :lines: 13-17
 
-``Router`` provides a decorator. The first argument is the fields that the
-decorated function returns. These are wrapped in a message and passed around
-between functions.
+``Router`` provides a decorator (``node``). The first argument is the fields
+that the decorated function returns. These are wrapped in a message and passed
+around between functions.
 
 We don't specify any subscriptions on this function, since it really doesn't
 need any. In fact, it's an entry point, so we specify that instead. This
@@ -91,3 +91,9 @@ or passing a dictionary.
 In the end, data flows through the graph like this:
 
 .. image:: ../examples/simple/graph.png
+
+Next Steps
+----------
+
+Now that you've got this under your belt, check out how to integrate your graph
+with :doc:`RQ <rq>` or :doc:`Celery <celery>`.
