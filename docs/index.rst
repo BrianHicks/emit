@@ -32,11 +32,13 @@ Supported Pythons:
 * `CPython 2.6`_
 * `CPython 2.7`_
 * `CPython 3.2`_
+* `CPython 3.3`_
 * `PyPy 1.9`_
 
 .. _CPython 2.6: http://docs.python.org/2.6/
 .. _CPython 2.7: http://docs.python.org/2.7/
 .. _Cpython 3.2: http://docs.python.org/3.2/
+.. _Cpython 3.3: http://docs.python.org/3.3/
 .. _PyPy 1.9: http://pypy.org/index.html
 
 Indices and tables
