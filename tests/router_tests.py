@@ -598,6 +598,15 @@ class RQRouterTests(TestCase):
         self.func = lambda n: n
         self.func.__name__ = 'test_function'
 
+    def test_dispatches_with_delay(self):
+        'dispatches by calling delay'
+        node = mock.Mock()
+        self.router.functions['test'] = node
+
+        self.router.dispatch('origin', 'test', {'x': 1})
+
+        node.delay.assert_called_with(_origin='origin', x=1)
+
     @mock.patch('emit.router.job')
     def test_registers_as_job(self, fake_job):
         'registers the task with the job decorator'
