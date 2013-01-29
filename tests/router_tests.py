@@ -615,3 +615,14 @@ class RQRouterTests(TestCase):
             queue='test', connection=self.redis,
             timeout=None, result_ttl=500
         )
+
+    @mock.patch('emit.router.job')
+    def test_accepts_connection(self, fake_job):
+        'accepts connection'
+        redis = Redis()
+        self.router.node(tuple(), connection=redis)(self.func)
+
+        fake_job.assert_called_with(
+            queue='default', connection=redis,
+            timeout=None, result_ttl=500
+        )
