@@ -1,23 +1,18 @@
 'tests for emit/router.py'
 from __future__ import print_function
 import re
-from unittest import TestCase
+from unittest import TestCase, skipIf
 
-from celery import Celery, Task
 import mock
 from redis import Redis
 
 from emit.router import Router, CeleryRouter, RQRouter
 from emit.message import Message, NoResult
 
-
-def get_test_celery():
-    celery = Celery()
-    celery.conf.update(
-        CELERY_ALWAYS_EAGER=True
-    )
-    return celery
-
+try:
+    from celery import Celery
+except ValueError:  # Celery doesn't work under Python 3.3 - when it does it'll test again
+    Celery = None
 
 def get_named_mock(name):
     m = mock.MagicMock()
@@ -483,15 +478,6 @@ class RouterTests(TestCase):
             self.router.get_name(l)
         )
 
-    def test_get_name_celery(self):
-        'gets the name of a celery-decorated function'
-        celery = get_test_celery()
-        l = lambda x: x
-        l.__name__ = 'test'
-        l = celery.task(l)
-
-        self.assertEqual(prefix('test'), self.router.get_name(l))
-
     def test_custom_message(self):
         'sends a custom message type'
         class CMessage(Message):
@@ -547,11 +533,21 @@ class RouterTests(TestCase):
         self.assertEqual(0, watcher.call_count)
 
 
+@skipIf(Celery is None, 'Celery did not import correctly')
 class CeleryRouterTests(TestCase):
     'tests for using celery to route nodes'
     def setUp(self):
-        self.celery = get_test_celery()
+        from celery import Celery
+
+        self.celery = self.get_test_celery()
         self.router = CeleryRouter(self.celery.task)
+
+    def get_test_celery(self):
+        celery = Celery()
+        celery.conf.update(
+            CELERY_ALWAYS_EAGER=True
+        )
+        return celery
 
     def test_registers_as_task(self):
         'registers the function as a task'
@@ -587,6 +583,14 @@ class CeleryRouterTests(TestCase):
         self.router(x=1)
 
         node.delay.assert_called_with(_origin='__entry_point', x=1)
+
+    def test_get_name_celery(self):
+        'gets the name of a celery-decorated function'
+        l = lambda x: x
+        l.__name__ = 'test'
+        l = self.celery.task(l)
+
+        self.assertEqual(prefix('test'), self.router.get_name(l))
 
 
 class RQRouterTests(TestCase):
