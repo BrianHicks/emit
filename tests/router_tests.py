@@ -626,3 +626,13 @@ class RQRouterTests(TestCase):
             queue='default', connection=redis,
             timeout=None, result_ttl=500
         )
+
+    @mock.patch('emit.router.job')
+    def test_accepts_timeout(self, fake_job):
+        'accepts timeout'
+        self.router.node(tuple(), timeout=30)(self.func)
+
+        fake_job.assert_called_with(
+            queue='default', connection=self.redis,
+            timeout=30, result_ttl=500
+        )
