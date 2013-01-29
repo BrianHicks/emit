@@ -40,19 +40,19 @@ to specify which nodes to listen to when running ``rqworker``.
 
 The available parameters:
 
-+------------+---------------------+------------------------------------------+
-| parameter  | default             | effect                                   |
-+============+=====================+==========================================+
-| queue      | 'default'           | specify a queue to route to.             |
-+------------+---------------------+------------------------------------------+
-| connection | supplied connection | a different connection - be careful with |
-|            |                     | this, as you'll need to specify the      |
-|            |                     | connection string on the worker          |
-+------------+---------------------+------------------------------------------+
-| timeout    | None                | timeout (in seconds) of a task           |
-+------------+---------------------+------------------------------------------+
-| result_ttl | 500                 | TTL (in seconds) of results              |
-+------------+---------------------+------------------------------------------+
++----------------+---------------------+------------------------------------------+
+| parameter      | default             | effect                                   |
++================+=====================+==========================================+
+| ``queue``      | ``'default'``       | specify a queue to route to.             |
++----------------+---------------------+------------------------------------------+
+| ``connection`` | supplied connection | a different connection - be careful with |
+|                |                     | this, as you'll need to specify the      |
+|                |                     | connection string on the worker          |
++----------------+---------------------+------------------------------------------+
+| ``timeout``    | ``None``            | timeout (in seconds) of a task           |
++----------------+---------------------+------------------------------------------+
+| ``result_ttl`` | ``500``             | TTL (in seconds) of results              |
++----------------+---------------------+------------------------------------------+
 
 Running the Graph
 -----------------
