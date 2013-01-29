@@ -71,6 +71,10 @@ Router
    :members:
    :special-members:
 
+.. autoclass:: RQRouter
+   :members:
+   :special-members:
+
 Message
 -------
 
