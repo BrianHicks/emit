@@ -7,8 +7,9 @@ functions. It is designed to make processing streams of information a whole lot
 easier.
 
 You may want to start at :doc:`getting-started`. Other highlights include
-integration with :doc:`Celery <celery>` and :doc:`RQ <rq>` and Emit's
-:doc:`multi-language <multilang>` capabilities.
+integration with :doc:`Celery <distributing-work/celery>` and :doc:`RQ
+<distributing-work/rq>` and Emit's :doc:`multi-language <multilang>`
+capabilities.
 
 Contents:
 

@@ -96,4 +96,4 @@ Next Steps
 ----------
 
 Now that you've got this under your belt, check out how to integrate your graph
-with :doc:`RQ <rq>` or :doc:`Celery <celery>`.
+with :doc:`RQ <distributing-work/rq>` or :doc:`Celery <distributing-work/celery>`.
