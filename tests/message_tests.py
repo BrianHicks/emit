@@ -30,7 +30,7 @@ class MessageTests(TestCase):
         x = Message(x=1, y=2)
         self.assertRegexpMatches(
             repr(x),
-            r'Message\(((x=1|y=2)(, )?){2})'
+            r'Message\(((x=1|y=2)(, )?){2}\)'
         )
 
     def test_dir(self):
