@@ -19,12 +19,12 @@ Contents:
    getting-started
    distributing-work/index
    multilang
+   terminology
    regex-routing
    command-line-utilities
    logging
    testing
    api-documentation
-   glossary
    changelog
 
 Supported Pythons:
