@@ -1,14 +1,10 @@
 Getting Started
 ===============
 
-After reading this document you'll have a good idea of what you need to do to
-get your first emit graph running, both in local memory and Celery.
-
 Installing
 ----------
 
-Eventually, you'll be able to install via `pip`. However, while the library is
-under initial development you'll need to install via git::
+You can install emit with ``pip``::
 
     pip install emit
 
