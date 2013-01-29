@@ -16,6 +16,7 @@ try:
 except ValueError:  # Celery doesn't work under Python 3.3 - when it does it'll test again
     Celery = None
 
+
 def get_named_mock(name):
     m = mock.MagicMock()
     m.__name__ = name

@@ -5,6 +5,7 @@ def passthru(condition, message):
 
     return outer
 
+
 def _skipIf(condition, message):
     def outer(func):
         if condition:
