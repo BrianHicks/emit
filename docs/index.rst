@@ -10,13 +10,6 @@ You may want to start at :doc:`getting-started`. Other highlights include
 integration with :doc:`Celery <celery>` and :doc:`RQ <rq>` and Emit's
 :doc:`multi-language <multilang>` capabilities.
 
-Supported Pythons:
-
-* CPython 2.6
-* CPython 2.7
-* CPython 3.2
-* PyPy 1.9
-
 Contents:
 
 .. toctree::
@@ -34,6 +27,17 @@ Contents:
    glossary
    changelog
 
+Supported Pythons:
+
+* `CPython 2.6`_
+* `CPython 2.7`_
+* `CPython 3.2`_
+* `PyPy 1.9`_
+
+.. _CPython 2.6: http://docs.python.org/2.6/
+.. _CPython 2.7: http://docs.python.org/2.7/
+.. _Cpython 3.2: http://docs.python.org/3.2/
+.. _PyPy 1.9: http://pypy.org/index.html
 
 Indices and tables
 ==================
