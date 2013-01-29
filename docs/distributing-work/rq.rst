@@ -5,14 +5,14 @@ RQ is a module that makes distributed processing easy. It's similar to Celery,
 but simpler and only for Python and Redis. We'll be using the same example as
 we did in the Celery example.
 
-.. image:: ../examples/celery/graph.png
+.. image:: ../../examples/celery/graph.png
 
 Setting up RQ
 -----------------
 
 Create an ``app.py`` file for your RQ Router initializaition code to live in:
 
-.. literalinclude:: ../examples/rq/app.py
+.. literalinclude:: ../../examples/rq/app.py
    :language: python
    :linenos:
 
@@ -22,7 +22,7 @@ use. The rest of the options are specified at the node level.
 Next we'll define (in ``tasks.py``) a function to take a document and emit each
 word:
 
-.. literalinclude:: ../examples/rq/tasks.py
+.. literalinclude:: ../../examples/rq/tasks.py
    :language: python
    :lines: 5-8
 
@@ -31,7 +31,7 @@ want to mess with queues, this will *just work*.
 
 If you want to set some attributes, however, you can:
 
-.. literalinclude:: ../examples/rq/tasks.py
+.. literalinclude:: ../../examples/rq/tasks.py
    :language: python
    :lines: 11-14
 
@@ -59,14 +59,14 @@ Running the Graph
 
 We just need to start the RQ worker:
 
-.. literalinclude:: ../examples/rq/run.sh
+.. literalinclude:: ../../examples/rq/run.sh
    :language: sh
 
 And enter the following on the command line to start something fun processing
 (if you'd like, the relevant code is in ``examples/rq/kickoff.py`` in the
 project directory, start it and get a prompt with ``ipython -i kickoff.py``):
 
-.. literalinclude:: ../examples/rq/kickoff.py
+.. literalinclude:: ../../examples/rq/kickoff.py
    :language: python
 
 And you should see the rqworker window quickly scrolling by with updated
@@ -82,5 +82,5 @@ snippet (adapted from the `RQ worker documentation`_)
 
 .. _`RQ worker documentation`: http://python-rq.org/docs/workers/
 
-.. literalinclude:: ../examples/rq/worker.py
+.. literalinclude:: ../../examples/rq/worker.py
    :language: python
