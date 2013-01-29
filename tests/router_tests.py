@@ -12,7 +12,7 @@ from emit.router import Router, CeleryRouter, RQRouter
 from emit.message import Message, NoResult
 
 try:
-    from celery import Celery
+    from celery import Celery, Task
 except ValueError:  # Celery doesn't work under Python 3.3 - when it does it'll test again
     Celery = None
 
@@ -539,8 +539,6 @@ class RouterTests(TestCase):
 class CeleryRouterTests(TestCase):
     'tests for using celery to route nodes'
     def setUp(self):
-        from celery import Celery, Task
-
         self.celery = self.get_test_celery()
         self.router = CeleryRouter(self.celery.task)
 
