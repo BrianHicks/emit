@@ -6,14 +6,14 @@ many worker nodes. To demonstrate this, we'll be scaling our quickstart example
 
 We'll be making, in essence, this graph:
 
-.. image:: ../examples/celery/graph.png
+.. image:: ../../examples/celery/graph.png
 
 Setting up Celery
 -----------------
 
 Create an ``app.py`` file for your celery initializaition code to live in:
 
-.. literalinclude:: ../examples/celery/app.py
+.. literalinclude:: ../../examples/celery/app.py
    :language: python
    :linenos:
 
@@ -25,7 +25,7 @@ should be on the ``app`` object (as on line 10).
 Next we'll define (in ``tasks.py``) a function to take a document and emit each
 word:
 
-.. literalinclude:: ../examples/celery/tasks.py
+.. literalinclude:: ../../examples/celery/tasks.py
    :language: python
    :lines: 5-8
 
@@ -35,7 +35,7 @@ celery: since we specified it in the router, they just do.
 However, if you want to give special celery attributes to a particular
 function, you can do that too:
 
-.. literalinclude:: ../examples/celery/tasks.py
+.. literalinclude:: ../../examples/celery/tasks.py
    :language: python
    :lines: 11-14
 
@@ -48,14 +48,14 @@ Running the Graph
 
 We'll need to boot up the celery daemon:
 
-.. literalinclude:: ../examples/celery/run.sh
+.. literalinclude:: ../../examples/celery/run.sh
    :language: sh
 
 And enter the following on the command line to start something fun processing
 (if you'd like, the relevant code is in ``examples/celery/kickoff.py`` in the
 project directory, start it and get a prompt with ``ipython -i kickoff.py``):
 
-.. literalinclude:: ../examples/celery/kickoff.py
+.. literalinclude:: ../../examples/celery/kickoff.py
    :language: python
 
 You should get something like the following:
