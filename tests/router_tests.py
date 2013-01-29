@@ -1,7 +1,9 @@
 'tests for emit/router.py'
 from __future__ import print_function
 import re
-from unittest import TestCase, skipIf
+from unittest import TestCase
+
+from .utils import skipIf
 
 import mock
 from redis import Redis
@@ -537,7 +539,7 @@ class RouterTests(TestCase):
 class CeleryRouterTests(TestCase):
     'tests for using celery to route nodes'
     def setUp(self):
-        from celery import Celery
+        from celery import Celery, Task
 
         self.celery = self.get_test_celery()
         self.router = CeleryRouter(self.celery.task)
