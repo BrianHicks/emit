@@ -72,3 +72,15 @@ project directory, start it and get a prompt with ``ipython -i kickoff.py``):
 And you should see the rqworker window quickly scrolling by with updated
 totals.  Run the command a couple more times, if you like, and you'll see the
 totals keep going up.
+
+Performance
+-----------
+
+Because of the way RQ forks tasks, the graph is rebuilt for every task. To
+speed up this process, do it once on worker initialization. You can use this
+snippet (adapted from the `RQ worker documentation`_)
+
+.. _`RQ worker documentation`: http://python-rq.org/docs/workers/
+
+.. literalinclude:: ../examples/rq/worker.py
+   :language: python
