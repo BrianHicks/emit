@@ -28,9 +28,9 @@ class MessageTests(TestCase):
 
     def test_repr(self):
         x = Message(x=1, y=2)
-        self.assertEqual(
-            'Message(y=2, x=1)',
-            repr(x)
+        self.assertRegexpMatches(
+            repr(x),
+            r'Message\(((x=1|y=2)(, )?){2})'
         )
 
     def test_dir(self):
