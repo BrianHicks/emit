@@ -25,6 +25,13 @@ def mi():
 
     return 0
 
+
+def read(fname):
+    try:
+        return open(os.path.join(os.path.dirname(__file__), fname)).read()
+    except IOError:  # for tox
+        return ''
+
 if __name__ == '__main__':
     try:
         arg = sys.argv[1]
@@ -38,12 +45,27 @@ if __name__ == '__main__':
 setup(
     name='emit',
     version=emit.__version__,
-    description='Emitter for stream processing',
-    url='http://github.com/brianhicks/emit',
-    author='Brian Hicks',
-    author_email='brian@brianthicks.com',
-    license='MIT',
     packages=['emit'],
     scripts=['emit/bin/emit_digraph'],
-    zip_safe=False
+
+    # PyPI stuff
+    author='Brian Hicks',
+    author_email='brian@brianthicks.com',
+    url='http://github.com/brianhicks/emit',
+    description='Emitter for stream processing',
+    keywords='stream processing',
+    long_description=read('README.rst'),
+    license='MIT',
+    classifiers=[
+        'Development Status :: 4 - Beta',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: Apache Software License',
+        'Natural Language :: English',
+        'Programming Language :: Python :: 2.6',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.2',
+        'Programming Language :: Python :: Implementation :: CPython',
+        'Programming Language :: Python :: Implementation :: PyPy',
+        'Topic :: Software Development :: Libraries :: Python Modules',
+    ],
 )
