@@ -46,10 +46,11 @@ Some Links:
 
 Supported Pythons:
 
--  CPython 2.6
--  CPython 2.7
--  CPython 3.2
--  PyPy 1.9
+- CPython 2.6
+- CPython 2.7
+- CPython 3.2
+- CPython 3.3 (except for Celery, currently)
+- PyPy 1.9
 
 .. |Build Status| image:: https://travis-ci.org/BrianHicks/emit.png?branch=master
    :target: https://travis-ci.org/BrianHicks/emit
