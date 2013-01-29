@@ -43,6 +43,15 @@ Obviously rate limiting to 5 per second in this case is a bit contrived, but
 you get the general idea: it's easy to configure tasks within the decorator by
 passing in the celery decorator.
 
+The available parameters:
+
++-----------------+---------+------------------------------------------+
+| parameter       | default | effect                                   |
++=================+=========+==========================================+
+| ``celery_task`` | None    | override the supplied celery task with a |
+|                 |         | node-specific tas                        |
++-----------------+---------+------------------------------------------+
+
 Running the Graph
 -----------------
 
