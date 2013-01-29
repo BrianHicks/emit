@@ -1,30 +1,23 @@
-.. Emit documentation master file, created by
-   sphinx-quickstart on Thu Jan  3 19:10:48 2013.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Welcome to Emit's documentation!
 ================================
 
-Emit is a library that hooks into Celery (or just local memory) to provide
-subscriptions and notifications for your functions. It makes stream processing a
-whole lot easier.
+Emit is a library that hooks into distributed systems like Celery or RQ (or
+just local memory) to provide subscriptions and notifications for your
+functions. It is designed to make processing streams of information a whole lot
+easier.
 
-Supported Pythons:
-
-* CPython 2.6
-* CPython 2.7
-* CPython 3.2
-* PyPy 1.9
+You may want to start at :doc:`getting-started`. Other highlights include
+integration with :doc:`Celery <distributing-work/celery>` and :doc:`RQ
+<distributing-work/rq>` and Emit's :doc:`multi-language <multilang>`
+capabilities.
 
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    getting-started
-   celery
-   rq
+   distributing-work/index
    multilang
    regex-routing
    command-line-utilities
@@ -34,6 +27,17 @@ Contents:
    glossary
    changelog
 
+Supported Pythons:
+
+* `CPython 2.6`_
+* `CPython 2.7`_
+* `CPython 3.2`_
+* `PyPy 1.9`_
+
+.. _CPython 2.6: http://docs.python.org/2.6/
+.. _CPython 2.7: http://docs.python.org/2.7/
+.. _Cpython 3.2: http://docs.python.org/3.2/
+.. _PyPy 1.9: http://pypy.org/index.html
 
 Indices and tables
 ==================

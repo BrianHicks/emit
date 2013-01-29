@@ -1,14 +1,10 @@
 Getting Started
 ===============
 
-After reading this document you'll have a good idea of what you need to do to
-get your first emit graph running, both in local memory and Celery.
-
 Installing
 ----------
 
-Eventually, you'll be able to install via `pip`. However, while the library is
-under initial development you'll need to install via git::
+You can install emit with ``pip``::
 
     pip install emit
 
@@ -52,9 +48,9 @@ Next, we define a function to split apart a document on spaces to get words:
    :language: python
    :lines: 13-17
 
-``Router`` provides a decorator. The first argument is the fields that the
-decorated function returns. These are wrapped in a message and passed around
-between functions.
+``Router`` provides a decorator (``node``). The first argument is the fields
+that the decorated function returns. These are wrapped in a message and passed
+around between functions.
 
 We don't specify any subscriptions on this function, since it really doesn't
 need any. In fact, it's an entry point, so we specify that instead. This
@@ -95,3 +91,9 @@ or passing a dictionary.
 In the end, data flows through the graph like this:
 
 .. image:: ../examples/simple/graph.png
+
+Next Steps
+----------
+
+Now that you've got this under your belt, check out how to integrate your graph
+with :doc:`RQ <distributing-work/rq>` or :doc:`Celery <distributing-work/celery>`.
