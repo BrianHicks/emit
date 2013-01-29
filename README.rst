@@ -1,13 +1,13 @@
 Emit
 ====
 
-Emit is a Python library for realtime data processing. It can
-`distribute work with
-Celery <https://emit.readthedocs.org/en/latest/celery.html>`__,
-`coordinate execution in other
-languages <https://emit.readthedocs.org/en/latest/multilang.html>`__,
-and let you swing from the trees of your graph with Tarzan-like
-precision.
+Emit is a Python library for realtime data processing. It can distribute work
+with `Celery
+<https://emit.readthedocs.org/en/latest/distributing-work/celery.html>`_ or `RQ
+<https://emit.readthedocs.org/en/latest/distributing-work/rq.html>`_,
+`coordinate execution in other languages
+<https://emit.readthedocs.org/en/latest/multilang.html>`_, and let you swing
+from the trees of your graph with Tarzan-like precision.
 
 A taste:
 
