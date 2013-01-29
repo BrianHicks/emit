@@ -7,6 +7,13 @@ from types import GeneratorType
 
 from .message import Message, NoResult
 
+try:
+    from rq import Queue
+    from rq.decorators import job
+except ImportError:
+    Queue = None
+    job = None
+
 
 class Router(object):
     'A router object. Holds routes and references to functions for dispatch'
@@ -37,12 +44,14 @@ class Router(object):
 
         # manage imported packages, lazily importing before the first message
         # is routed.
-        self.resolved_node_modules = False
+        self.resolved_node_modules = []
         self.node_modules = node_modules or []
         self.node_package = node_package
 
         self.logger = logging.getLogger(__name__ + '.Router')
         self.logger.debug('Initialized Router')
+
+        self.routing_enabled = True
 
     def __call__(self, **kwargs):
         '''\
@@ -158,13 +167,17 @@ class Router(object):
 
     def resolve_node_modules(self):
         'import the modules specified in init'
-        if self.resolved_node_modules:
-            return
+        if not self.resolved_node_modules:
+            try:
+                self.resolved_node_modules = [
+                    importlib.import_module(mod, self.node_package)
+                    for mod in self.node_modules
+                ]
+            except ImportError:
+                self.resolved_node_modules = []
+                raise
 
-        for _import in self.node_modules:
-            importlib.import_module(_import, self.node_package)
-
-        self.resolved_node_modules = True
+        return self.resolved_node_modules
 
     def get_message_from_call(self, *args, **kwargs):
         '''\
@@ -214,7 +227,7 @@ class Router(object):
         self.register_route(subscribe_to, name)
 
         if ignore:
-            self.register_ignore(ingore, name)
+            self.register_ignore(ignore, name)
 
         if entry_point:
             self.add_entry_point(name)
@@ -229,6 +242,7 @@ class Router(object):
         :type destination: str
         '''
         self.routes.setdefault('__entry_point', set()).add(destination)
+        return self.routes['__entry_point']
 
     def register_route(self, origins, destination):
         '''
@@ -255,6 +269,7 @@ class Router(object):
         self.regexes.setdefault(destination, [re.compile(origin) for origin in origins])
 
         self.regenerate_routes()
+        return self.regexes[destination]
 
     def register_ignore(self, origins, destination):
         '''
@@ -276,6 +291,8 @@ class Router(object):
 
         self.ignore_regexes.setdefault(destination, [re.compile(origin) for origin in origins])
         self.regenerate_routes()
+
+        return self.ignore_regexes[destination]
 
     def regenerate_routes(self):
         'regenerate the routes after a new route is added'
@@ -306,6 +323,14 @@ class Router(object):
 
                 destinations.add(destination)
 
+    def disable_routing(self):
+        'disable routing (usually for testing purposes)'
+        self.routing_enabled = False
+
+    def enable_routing(self):
+        'enable routing (after calling ``disable_routing``)'
+        self.routing_enabled = True
+
     def route(self, origin, message):
         '''\
         Using the routing dictionary, dispatch a message to all subscribers
@@ -319,6 +344,9 @@ class Router(object):
         # we can't resolve them while the object is initializing, so we have to
         # do it just in time to route.
         self.resolve_node_modules()
+
+        if not self.routing_enabled:
+            return
 
         subs = self.routes.get(origin, set())
 
@@ -348,12 +376,19 @@ class Router(object):
         :param result: return value from function. Will be converted to tuple.
         :type result: anything
 
+        :raises: :py:exc:`ValueError` if name has no associated fields
+
         :returns: :py:class:`dict`
         '''
         if not isinstance(result, tuple):
             result = tuple([result])
 
-        return dict(zip(self.fields[name], result))
+        try:
+            return dict(zip(self.fields[name], result))
+        except KeyError:
+            msg = '"%s" has no associated fields'
+            self.logger.exception(msg, name)
+            raise ValueError(msg % name)
 
     def get_name(self, func):
         '''
@@ -408,3 +443,38 @@ class CeleryRouter(Router):
             return options['celery_task'](node)
 
         return self.celery_task(node)
+
+
+class RQRouter(Router):
+    'Router specifically for RQ routing'
+    def __init__(self, redis_connection, *args, **kwargs):
+        '''\
+        Specific routing when using RQ
+
+        :param redis_connection: a redis connection to send to all the tasks
+                                 (can be overridden in :py:meth:`Router.node`.)
+        :type redis_connection: :py:class:`redis.Redis`
+        '''
+        super(RQRouter, self).__init__(*args, **kwargs)
+        self.redis_connection = redis_connection
+        self.logger.debug('Initialized RQ Router')
+
+    def dispatch(self, origin, destination, message):
+        'dispatch through RQ'
+        func = self.functions[destination]
+        self.logger.debug('enqueueing %r', func)
+        return func.delay(_origin=origin, **message)
+
+    def wrap_node(self, node, options):
+        '''
+        we have the option to construct nodes here, so we can use different
+        queues for nodes without having to have different queue objects.
+        '''
+        job_kwargs = {
+            'queue': options.get('queue', 'default'),
+            'connection': options.get('connection', self.redis_connection),
+            'timeout': options.get('timeout', None),
+            'result_ttl': options.get('result_ttl', 500),
+        }
+
+        return job(**job_kwargs)(node)

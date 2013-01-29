@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.3.0
+-----
+
+ - Better documentation
+ - :doc:`RQ support <distributing-work/rq>`
+
 0.2.0
 -----
 

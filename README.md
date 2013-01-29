@@ -12,12 +12,12 @@ from emit import router
 
 router = Router()
 
-@router.task(['word'], entry_point=True)
+@router.node(['word'], entry_point=True)
 def parse_document(msg):
     for word in msg.document.strip().split(' '):
         yield word
 
-@router.task(['word', 'count'], 'parse_document')
+@router.node(['word', 'count'], 'parse_document')
 def count_word(msg):
     return msg.word, redis.zincrby('word_counts', msg.word, 1)
 

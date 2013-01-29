@@ -7,7 +7,6 @@ Router
 .. module:: emit.router
 
 .. autoclass:: Router
-   :members: dispatch, get_message_from_call, get_name, regenerate_routes, register, register_ignore, register_route, route, wrap_result
 
    .. automethod:: Router.__init__
 
@@ -53,7 +52,26 @@ Router
 
       Each message in the tuple will be passed on individually in the graph.
 
+   .. automethod:: Router.add_entry_point
+   .. automethod:: Router.disable_routing
+   .. automethod:: Router.dispatch
+   .. automethod:: Router.enable_routing
+   .. automethod:: Router.get_message_from_call
+   .. automethod:: Router.get_name
+   .. automethod:: Router.regenerate_routes
+   .. automethod:: Router.register
+   .. automethod:: Router.register_ignore
+   .. automethod:: Router.register_route
+   .. automethod:: Router.resolve_node_modules
+   .. automethod:: Router.route
+   .. automethod:: Router.wrap_as_node
+   .. automethod:: Router.wrap_result
+
 .. autoclass:: CeleryRouter
+   :members:
+   :special-members:
+
+.. autoclass:: RQRouter
    :members:
    :special-members:
 
@@ -63,6 +81,9 @@ Message
 .. module:: emit.message
 
 .. autoclass:: Message
+   :members:
+
+.. autoclass:: NoResult
    :members:
 
 Multilang
