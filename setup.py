@@ -25,7 +25,7 @@ setup(
     },
 
     # Human information
-    author='Brian Hicks'
+    author='Brian Hicks',
     author_email='brian@brianthicks.com',
     url='https://github.com/brianhicks/emit',
     description='Build a graph to process streams',
