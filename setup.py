@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 import os
 from subprocess import Popen, PIPE
 import sys
@@ -45,7 +45,7 @@ if __name__ == '__main__':
 setup(
     name='emit',
     version=emit.__version__,
-    packages=['emit'],
+    packages=find_packages(),
     scripts=['emit/bin/emit_digraph'],
 
     # PyPI stuff
