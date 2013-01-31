@@ -78,7 +78,7 @@ Router
 Message
 -------
 
-.. module:: emit.message
+.. module:: emit.messages
 
 .. autoclass:: Message
    :members:
