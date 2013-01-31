@@ -2,9 +2,16 @@ import mock
 from redis import Redis
 from unittest import TestCase
 
-from emit.router.rq import RQRouter
+from .utils import skipIf
+
+try:
+    import rq
+    from emit.router.rq import RQRouter
+except ImportError:
+    RQRouter = None
 
 
+@skipIf(RQRouter is None, 'RQ did not import correctly')
 class RQRouterTests(TestCase):
     'tests for using RQ to route nodes'
     def setUp(self):
