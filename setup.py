@@ -3,6 +3,7 @@ from setuptools import setup, find_packages
 
 import emit
 
+
 def read(fname):
     try:
         return open(os.path.join(os.path.dirname(__file__), fname)).read()
