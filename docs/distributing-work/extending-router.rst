@@ -21,5 +21,5 @@ Example
 
 See the following example (the current ``RQRouter`` implementation):
 
-.. literalinclude:: ../../emit/router/core.py
+.. literalinclude:: ../../emit/router/rq.py
    :pyobject: RQRouter
