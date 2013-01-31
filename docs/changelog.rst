@@ -1,6 +1,15 @@
 Changelog
 =========
 
+0.4.0
+-----
+
+ - Optional install bundles for installing with RQ or Celery
+ - Move modules around to make API more consistent. Notably,
+   ``emit.router.Router`` is now in ``emit.router.core`` with RQ and Celery
+   backends in ``emit.router.rq`` and ``emit.router.celery``, respectively.
+ - Huge cleanup of codebase in general, especially test suite and ``setup.py``.
+
 0.3.0
 -----
 

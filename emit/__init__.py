@@ -1,3 +1,3 @@
-__version__ = '0.4.0pre'
+__version__ = '0.4.0'
 
 from emit.router.core import Router
