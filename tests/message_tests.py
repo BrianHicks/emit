@@ -2,7 +2,7 @@
 import json
 from unittest import TestCase
 
-from emit.message import Message
+from emit.messages import Message
 
 
 class MessageTests(TestCase):
