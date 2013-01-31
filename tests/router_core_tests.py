@@ -8,13 +8,12 @@ from .utils import skipIf
 import mock
 from redis import Redis
 
-from emit.router import Router, CeleryRouter, RQRouter
-from emit.message import Message, NoResult
+from emit.router.core import Router
+from emit.messages import Message, NoResult
 
-try:
-    from celery import Celery, Task
-except ValueError:  # Celery doesn't work under Python 3.3 - when it does it'll test again
-    Celery = None
+
+def prefix(name):
+    return '%s.%s' % (__name__, name)
 
 
 def get_named_mock(name):
@@ -24,15 +23,11 @@ def get_named_mock(name):
     return m
 
 
-def prefix(name):
-    return '%s.%s' % (__name__, name)
-
-
 class ResolveNodeModulesTests(TestCase):
     'tests for Router.resolve_node_modules'
     def setUp(self):
         'set up a patch'
-        importlib_patch = mock.patch('emit.router.importlib')
+        importlib_patch = mock.patch('emit.router.core.importlib')
         self.fake_importlib = importlib_patch.start()
 
         def maybe_raise(imp, pkg):
@@ -168,7 +163,7 @@ class RegisterTests(TestCase):
             self.router.functions[self.name]
         )
 
-    @mock.patch('emit.router.Router.register_route', autospec=True)
+    @mock.patch('emit.router.core.Router.register_route', autospec=True)
     def test_registers_route(self, fake_rr):
         'register calls register_route'
         self.router.register(*self.get_args())
@@ -176,13 +171,13 @@ class RegisterTests(TestCase):
             self.router, self.subscribe_to, self.name
         )
 
-    @mock.patch('emit.router.Router.register_ignore', autospec=True)
+    @mock.patch('emit.router.core.Router.register_ignore', autospec=True)
     def test_does_not_call_ignore(self, fake_ignore):
         'register does not call register_ignore if it is not provided'
         self.router.register(*self.get_args(ignore=None))
         self.assertEqual(0, fake_ignore.call_count)
 
-    @mock.patch('emit.router.Router.register_ignore', autospec=True)
+    @mock.patch('emit.router.core.Router.register_ignore', autospec=True)
     def test_calls_ignore(self, fake_ignore):
         'register calls register_ignore if it is provided'
         self.router.register(*self.get_args(ignore=self.ignore))
@@ -190,13 +185,13 @@ class RegisterTests(TestCase):
             self.router, self.ignore, self.name
         )
 
-    @mock.patch('emit.router.Router.add_entry_point', autospec=True)
+    @mock.patch('emit.router.core.Router.add_entry_point', autospec=True)
     def test_does_not_call_add_entry_point(self, fake_aep):
         'register does not call add_entry_point if False'
         self.router.register(*self.get_args(entry_point=False))
         self.assertEqual(0, fake_aep.call_count)
 
-    @mock.patch('emit.router.Router.add_entry_point', autospec=True)
+    @mock.patch('emit.router.core.Router.add_entry_point', autospec=True)
     def test_calls_add_entry_point(self, fake_aep):
         'register calls add_entry_point if True'
         self.router.register(*self.get_args(entry_point=True))
@@ -534,129 +529,3 @@ class RouterTests(TestCase):
         func(n=1)
 
         self.assertEqual(0, watcher.call_count)
-
-
-@skipIf(Celery is None, 'Celery did not import correctly')
-class CeleryRouterTests(TestCase):
-    'tests for using celery to route nodes'
-    def setUp(self):
-        self.celery = self.get_test_celery()
-        self.router = CeleryRouter(self.celery.task)
-
-    def get_test_celery(self):
-        celery = Celery()
-        celery.conf.update(
-            CELERY_ALWAYS_EAGER=True
-        )
-        return celery
-
-    def test_registers_as_task(self):
-        'registers the function as a task'
-        l = lambda x: x
-        l.__name__ = 'test'
-        self.router.node(['test'], celery_task=self.celery.task)(l)
-
-        self.assertTrue(
-            isinstance(self.router.functions[prefix('test')], Task)
-        )
-
-    def test_adds_when_initialized(self):
-        'if router is passed a celery task when initialized it wraps with it'
-        r = CeleryRouter(celery_task=self.celery.task)
-
-        l = lambda x: x
-        l.__name__ = 'test'
-        r.node(['test'])(l)
-
-        self.assertTrue(
-            isinstance(r.functions[prefix('test')], Task)
-        )
-
-    def test_calls_delay(self):
-        'calls delay to route'
-        func = lambda n: n
-        func.name = 'name'
-        self.router.node(tuple(), entry_point=True)(func)
-
-        node = mock.Mock()  # replace node with mock to test call
-        self.router.functions['name'] = node
-
-        self.router(x=1)
-
-        node.delay.assert_called_with(_origin='__entry_point', x=1)
-
-    def test_get_name_celery(self):
-        'gets the name of a celery-decorated function'
-        l = lambda x: x
-        l.__name__ = 'test'
-        l = self.celery.task(l)
-
-        self.assertEqual(prefix('test'), self.router.get_name(l))
-
-
-class RQRouterTests(TestCase):
-    'tests for using RQ to route nodes'
-    def setUp(self):
-        self.redis = Redis()
-        self.router = RQRouter(self.redis)
-
-        self.func = lambda n: n
-        self.func.__name__ = 'test_function'
-
-    def test_dispatches_with_delay(self):
-        'dispatches by calling delay'
-        node = mock.Mock()
-        self.router.functions['test'] = node
-
-        self.router.dispatch('origin', 'test', {'x': 1})
-
-        node.delay.assert_called_with(_origin='origin', x=1)
-
-    @mock.patch('emit.router.job')
-    def test_registers_as_job(self, fake_job):
-        'registers the task with the job decorator'
-        self.router.node(tuple())(self.func)
-
-        decorator = fake_job()
-        self.assertEqual(1, decorator.call_count)
-
-    @mock.patch('emit.router.job')
-    def test_accepts_queue(self, fake_job):
-        'accepts queue'
-        self.router.node(tuple(), queue='test')(self.func)
-
-        fake_job.assert_called_with(
-            queue='test', connection=self.redis,
-            timeout=None, result_ttl=500
-        )
-
-    @mock.patch('emit.router.job')
-    def test_accepts_connection(self, fake_job):
-        'accepts connection'
-        redis = Redis()
-        self.router.node(tuple(), connection=redis)(self.func)
-
-        fake_job.assert_called_with(
-            queue='default', connection=redis,
-            timeout=None, result_ttl=500
-        )
-
-    @mock.patch('emit.router.job')
-    def test_accepts_timeout(self, fake_job):
-        'accepts timeout'
-        self.router.node(tuple(), timeout=30)(self.func)
-
-        fake_job.assert_called_with(
-            queue='default', connection=self.redis,
-            timeout=30, result_ttl=500
-        )
-
-    @mock.patch('emit.router.job')
-    def test_accepts_result_ttl(self, fake_job):
-        'accepts result_ttl'
-        self.router.node(tuple(), result_ttl=30)(self.func)
-
-        fake_job.assert_called_with(
-            queue='default', connection=self.redis,
-            timeout=None, result_ttl=30
-        )

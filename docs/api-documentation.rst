@@ -4,7 +4,7 @@ API Documentation
 Router
 ------
 
-.. module:: emit.router
+.. module:: emit.router.core
 
 .. autoclass:: Router
 
@@ -67,18 +67,10 @@ Router
    .. automethod:: Router.wrap_as_node
    .. automethod:: Router.wrap_result
 
-.. autoclass:: CeleryRouter
-   :members:
-   :special-members:
-
-.. autoclass:: RQRouter
-   :members:
-   :special-members:
-
 Message
 -------
 
-.. module:: emit.message
+.. module:: emit.messages
 
 .. autoclass:: Message
    :members:

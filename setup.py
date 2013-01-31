@@ -1,29 +1,7 @@
-from setuptools import setup
 import os
-from subprocess import Popen, PIPE
-import sys
+from setuptools import setup, find_packages
 
 import emit
-
-
-# add a few commands for measurement
-def cc():
-    proc = Popen(['radon', 'cc'] + sys.argv[1:], stdout=PIPE)
-    stdout, _ = proc.communicate()
-    sys.stdout.write(stdout.decode('utf-8'))
-    return 1 if stdout else 0
-
-
-def mi():
-    proc = Popen(['radon', 'mi'] + sys.argv[1:], stdout=PIPE)
-    stdout, _ = proc.communicate()
-    sys.stdout.write(stdout.decode('utf-8'))
-    for line in stdout.decode('utf-8').strip().split('\n'):
-        if not line.endswith('A'):
-            sys.stdout.write('One or more modules did not get an A. Failing.\n')
-            return 1
-
-    return 0
 
 
 def read(fname):
@@ -32,27 +10,23 @@ def read(fname):
     except IOError:  # for tox
         return ''
 
-if __name__ == '__main__':
-    try:
-        arg = sys.argv[1]
-    except IndexError:
-        arg = ''
-    command = {'cc': cc, 'mi': mi}.get(arg, None)
-    if command:
-        sys.exit(command())
-
-# pass execution to setuptools
 setup(
+    # System information
     name='emit',
     version=emit.__version__,
-    packages=['emit'],
+    packages=find_packages(exclude=('test',)),
     scripts=['emit/bin/emit_digraph'],
+    zip_safe=True,
+    extras_require = {
+        'celery-routing': ['celery>=3.0.13'],
+        'rq-routing': ['rq>=0.3.4', 'redis>=2.7.2'],
+    },
 
-    # PyPI stuff
+    # Human information
     author='Brian Hicks',
     author_email='brian@brianthicks.com',
-    url='http://github.com/brianhicks/emit',
-    description='Emitter for stream processing',
+    url='https://github.com/brianhicks/emit',
+    description='Build a graph to process streams',
     keywords='stream processing',
     long_description=read('README.rst'),
     license='MIT',
