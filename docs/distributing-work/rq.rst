@@ -1,6 +1,10 @@
 Using RQ to Distribute Processing
 =================================
 
+.. note::
+   RQ does not currently work on Python 3. Emit should work with it (as it
+   works with Python 2) when Python 3 support is ready.
+
 RQ is a module that makes distributed processing easy. It's similar to Celery,
 but simpler and only for Python and Redis. We'll be using the same example as
 we did in the Celery example.
