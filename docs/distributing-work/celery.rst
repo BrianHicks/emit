@@ -1,12 +1,25 @@
 Using Celery to Distribute Processing
 =====================================
 
+.. warning::
+   Celery doesn't work quite right under Python 3.3. It works fine under
+   2.6-3.2 and pypy. Follow `Bug 1107 on Celery
+   <https://github.com/celery/celery/issues/1107>`__ for progress.
+
 Emit makes it simple to use celery to distribute realtime processing across
 many worker nodes. To demonstrate this, we'll be scaling our quickstart example 
 
 We'll be making, in essence, this graph:
 
 .. image:: ../../examples/celery/graph.png
+
+Installing
+----------
+
+Emit can be installed pre-bundled with celery by installing with the following
+extra::
+
+    pip install emit[celery-routing]
 
 Setting up Celery
 -----------------

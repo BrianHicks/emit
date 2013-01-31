@@ -2,7 +2,7 @@
 import json
 from unittest import TestCase
 
-from emit.router import Router
+from emit.router.core import Router
 from emit.multilang import ShellNode
 
 

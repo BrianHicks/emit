@@ -5,14 +5,7 @@ import logging
 import re
 from types import GeneratorType
 
-from .message import Message, NoResult
-
-try:
-    from rq import Queue
-    from rq.decorators import job
-except ImportError:
-    Queue = None
-    job = None
+from emit.messages import Message, NoResult
 
 
 class Router(object):
@@ -404,77 +397,3 @@ class Router(object):
             func.__module__,
             func.__name__
         )
-
-
-class CeleryRouter(Router):
-    'Router specifically for Celery routing'
-    def __init__(self, celery_task, *args, **kwargs):
-        '''\
-        Specifically route when celery is needed
-
-        :param celery_task: celery task to apply to all nodes (can be
-                            overridden in :py:meth:`Router.node`.)
-        :type celery_task: A celery task decorator, in any form
-        '''
-        super(CeleryRouter, self).__init__(*args, **kwargs)
-        self.celery_task = celery_task
-        self.logger.debug('Initialized Celery Router')
-
-    def dispatch(self, origin, destination, message):
-        '''\
-        enqueue a message with Celery
-
-        :param destination: destination to dispatch to
-        :type destination: :py:class:`str`
-        :param message: message to dispatch
-        :type message: :py:class:`emit.message.Message` or subclass
-        '''
-        func = self.functions[destination]
-        self.logger.debug('delaying %r', func)
-        return func.delay(_origin=origin, **message)
-
-    def wrap_node(self, node, options):
-        '''\
-        celery registers tasks by decorating them, and so do we, so the user
-        can pass a celery task and we'll wrap our code with theirs in a nice
-        package celery can execute.
-        '''
-        if 'celery_task' in options:
-            return options['celery_task'](node)
-
-        return self.celery_task(node)
-
-
-class RQRouter(Router):
-    'Router specifically for RQ routing'
-    def __init__(self, redis_connection, *args, **kwargs):
-        '''\
-        Specific routing when using RQ
-
-        :param redis_connection: a redis connection to send to all the tasks
-                                 (can be overridden in :py:meth:`Router.node`.)
-        :type redis_connection: :py:class:`redis.Redis`
-        '''
-        super(RQRouter, self).__init__(*args, **kwargs)
-        self.redis_connection = redis_connection
-        self.logger.debug('Initialized RQ Router')
-
-    def dispatch(self, origin, destination, message):
-        'dispatch through RQ'
-        func = self.functions[destination]
-        self.logger.debug('enqueueing %r', func)
-        return func.delay(_origin=origin, **message)
-
-    def wrap_node(self, node, options):
-        '''
-        we have the option to construct nodes here, so we can use different
-        queues for nodes without having to have different queue objects.
-        '''
-        job_kwargs = {
-            'queue': options.get('queue', 'default'),
-            'connection': options.get('connection', self.redis_connection),
-            'timeout': options.get('timeout', None),
-            'result_ttl': options.get('result_ttl', 500),
-        }
-
-        return job(**job_kwargs)(node)

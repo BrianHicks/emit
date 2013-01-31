@@ -1,6 +1,6 @@
 'simple rq app'
 from redis import Redis
-from emit import RQRouter
+from emit.router.rq import RQRouter
 
 import logging
 

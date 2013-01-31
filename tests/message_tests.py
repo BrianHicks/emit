@@ -2,7 +2,7 @@
 import json
 from unittest import TestCase
 
-from emit.message import Message
+from emit.messages import Message
 
 
 class MessageTests(TestCase):
@@ -28,10 +28,16 @@ class MessageTests(TestCase):
 
     def test_repr(self):
         x = Message(x=1, y=2)
-        self.assertEqual(
-            'Message(y=2, x=1)',
-            repr(x)
-        )
+        try:
+            self.assertRegexpMatches(
+                repr(x),
+                r'Message\(((x=1|y=2)(, )?){2}\)'
+            )
+        except AttributeError:  # python 2.6
+            self.assertEqual(
+                'Message(y=2, x=1)',
+                repr(x)
+            )
 
     def test_dir(self):
         'dir includes attributes'

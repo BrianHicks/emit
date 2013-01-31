@@ -46,13 +46,23 @@ Some Links:
 
 Supported Pythons:
 
--  CPython 2.6
--  CPython 2.7
--  CPython 3.2
--  PyPy 1.9
-
-Be sure to check `Travis <https://travis-ci.org/BrianHicks/emit>`__ to
-see if the platform you want is currently passing. It may not be.
+- CPython 2.6
+- CPython 2.7
+- CPython 3.2
+- CPython 3.3 (except for Celery, currently)
+- PyPy 1.9
 
 .. |Build Status| image:: https://travis-ci.org/BrianHicks/emit.png?branch=master
    :target: https://travis-ci.org/BrianHicks/emit
+
+Installing from source/development branch:
+
+Emit's releases are fairly frequent, so you should be good to use a released
+version. However, if you need something currently not in a version, try the
+``develop`` branch::
+
+    pip install git+git://github.com/BrianHicks/emit.git@develop
+
+Just do be warned that things will break. And be sure to check `Travis
+<https://travis-ci.org/BrianHicks/emit>`__ to see if the platform you want is
+currently passing. It should be, but maybe not.

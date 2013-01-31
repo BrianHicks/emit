@@ -3,7 +3,7 @@ mock==1.0.1
 tox==1.4.2
 
 # testing celery example
-celery==3.0.12
+celery==3.0.13
 anyjson==0.3.3
 
 # testing rq example
