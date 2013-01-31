@@ -11,8 +11,16 @@ we did in the Celery example.
 
 .. image:: ../../examples/celery/graph.png
 
+Installing
+----------
+
+Emit can be installed pre-bundled with RQ by installing with the following
+extra::
+
+    pip install emit[rq-routing]
+
 Setting up RQ
------------------
+-------------
 
 Create an ``app.py`` file for your RQ Router initializaition code to live in:
 
