@@ -1,3 +1,6 @@
+import distribute_setup
+distribute_setup.use_setuptools()
+
 import os
 from setuptools import setup, find_packages
 
@@ -15,6 +18,7 @@ setup(
     version=emit.__version__,
     packages=find_packages(exclude=('test',)),
     scripts=['emit/bin/emit_digraph'],
+    zip_safe=True,
     extras_require = {
         'celery-routing': ['celery>=3.0.13'],
         'rq-routing': ['rq>=0.3.4', 'redis>=2.7.2'],
