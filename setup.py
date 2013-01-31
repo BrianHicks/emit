@@ -15,6 +15,10 @@ setup(
     version=emit.__version__,
     packages=find_packages(exclude=('test',)),
     scripts=['emit/bin/emit_digraph'],
+    extras_require = {
+        'celery-routing': ['celery>=3.0.13'],
+        'rq-routing': ['rq>=0.3.4', 'redis>=2.7.2'],
+    },
 
     # Human information
     author='Brian Hicks'
