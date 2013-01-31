@@ -4,7 +4,7 @@ API Documentation
 Router
 ------
 
-.. module:: emit.router
+.. module:: emit.router.core
 
 .. autoclass:: Router
 
