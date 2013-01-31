@@ -13,6 +13,14 @@ We'll be making, in essence, this graph:
 
 .. image:: ../../examples/celery/graph.png
 
+Installing
+----------
+
+Emit can be installed pre-bundled with celery by installing with the following
+extra::
+
+    pip install emit[celery-routing]
+
 Setting up Celery
 -----------------
 
