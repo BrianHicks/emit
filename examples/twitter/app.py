@@ -1,6 +1,6 @@
 'simple celery app'
 from celery import Celery
-from emit import CeleryRouter
+from emit.router.celery import CeleryRouter
 
 app = Celery(
     'celery_emit_example',
