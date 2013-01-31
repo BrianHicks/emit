@@ -1,6 +1,3 @@
-import distribute_setup
-distribute_setup.use_setuptools()
-
 import os
 from setuptools import setup, find_packages
 
@@ -30,7 +27,7 @@ setup(
     url='https://github.com/brianhicks/emit',
     description='Build a graph to process streams',
     keywords='stream processing',
-    long_description=read('README.rst')
+    long_description=read('README.rst'),
     license='MIT',
     classifiers=[
         'Development Status :: 4 - Beta',
