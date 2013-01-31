@@ -8,8 +8,8 @@ from .utils import skipIf
 import mock
 from redis import Redis
 
-from emit.router import Router, CeleryRouter, RQRouter
-from emit.message import Message, NoResult
+from emit.router.core import Router, CeleryRouter, RQRouter
+from emit.messages import Message, NoResult
 
 try:
     from celery import Celery, Task
@@ -32,7 +32,7 @@ class ResolveNodeModulesTests(TestCase):
     'tests for Router.resolve_node_modules'
     def setUp(self):
         'set up a patch'
-        importlib_patch = mock.patch('emit.router.importlib')
+        importlib_patch = mock.patch('emit.router.core.importlib')
         self.fake_importlib = importlib_patch.start()
 
         def maybe_raise(imp, pkg):
@@ -168,7 +168,7 @@ class RegisterTests(TestCase):
             self.router.functions[self.name]
         )
 
-    @mock.patch('emit.router.Router.register_route', autospec=True)
+    @mock.patch('emit.router.core.Router.register_route', autospec=True)
     def test_registers_route(self, fake_rr):
         'register calls register_route'
         self.router.register(*self.get_args())
@@ -176,13 +176,13 @@ class RegisterTests(TestCase):
             self.router, self.subscribe_to, self.name
         )
 
-    @mock.patch('emit.router.Router.register_ignore', autospec=True)
+    @mock.patch('emit.router.core.Router.register_ignore', autospec=True)
     def test_does_not_call_ignore(self, fake_ignore):
         'register does not call register_ignore if it is not provided'
         self.router.register(*self.get_args(ignore=None))
         self.assertEqual(0, fake_ignore.call_count)
 
-    @mock.patch('emit.router.Router.register_ignore', autospec=True)
+    @mock.patch('emit.router.core.Router.register_ignore', autospec=True)
     def test_calls_ignore(self, fake_ignore):
         'register calls register_ignore if it is provided'
         self.router.register(*self.get_args(ignore=self.ignore))
@@ -190,13 +190,13 @@ class RegisterTests(TestCase):
             self.router, self.ignore, self.name
         )
 
-    @mock.patch('emit.router.Router.add_entry_point', autospec=True)
+    @mock.patch('emit.router.core.Router.add_entry_point', autospec=True)
     def test_does_not_call_add_entry_point(self, fake_aep):
         'register does not call add_entry_point if False'
         self.router.register(*self.get_args(entry_point=False))
         self.assertEqual(0, fake_aep.call_count)
 
-    @mock.patch('emit.router.Router.add_entry_point', autospec=True)
+    @mock.patch('emit.router.core.Router.add_entry_point', autospec=True)
     def test_calls_add_entry_point(self, fake_aep):
         'register calls add_entry_point if True'
         self.router.register(*self.get_args(entry_point=True))
@@ -612,7 +612,7 @@ class RQRouterTests(TestCase):
 
         node.delay.assert_called_with(_origin='origin', x=1)
 
-    @mock.patch('emit.router.job')
+    @mock.patch('emit.router.core.job')
     def test_registers_as_job(self, fake_job):
         'registers the task with the job decorator'
         self.router.node(tuple())(self.func)
@@ -620,7 +620,7 @@ class RQRouterTests(TestCase):
         decorator = fake_job()
         self.assertEqual(1, decorator.call_count)
 
-    @mock.patch('emit.router.job')
+    @mock.patch('emit.router.core.job')
     def test_accepts_queue(self, fake_job):
         'accepts queue'
         self.router.node(tuple(), queue='test')(self.func)
@@ -630,7 +630,7 @@ class RQRouterTests(TestCase):
             timeout=None, result_ttl=500
         )
 
-    @mock.patch('emit.router.job')
+    @mock.patch('emit.router.core.job')
     def test_accepts_connection(self, fake_job):
         'accepts connection'
         redis = Redis()
@@ -641,7 +641,7 @@ class RQRouterTests(TestCase):
             timeout=None, result_ttl=500
         )
 
-    @mock.patch('emit.router.job')
+    @mock.patch('emit.router.core.job')
     def test_accepts_timeout(self, fake_job):
         'accepts timeout'
         self.router.node(tuple(), timeout=30)(self.func)
@@ -651,7 +651,7 @@ class RQRouterTests(TestCase):
             timeout=30, result_ttl=500
         )
 
-    @mock.patch('emit.router.job')
+    @mock.patch('emit.router.core.job')
     def test_accepts_result_ttl(self, fake_job):
         'accepts result_ttl'
         self.router.node(tuple(), result_ttl=30)(self.func)
