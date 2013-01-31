@@ -3,6 +3,7 @@ from rq.decorators import job
 
 from .core import Router
 
+
 class RQRouter(Router):
     'Router specifically for RQ routing'
     def __init__(self, redis_connection, *args, **kwargs):
