@@ -5,7 +5,7 @@ import logging
 import re
 from types import GeneratorType
 
-from ..messages import Message, NoResult
+from emit.messages import Message, NoResult
 
 try:
     from rq import Queue
