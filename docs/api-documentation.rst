@@ -67,10 +67,6 @@ Router
    .. automethod:: Router.wrap_as_node
    .. automethod:: Router.wrap_result
 
-.. autoclass:: CeleryRouter
-   :members:
-   :special-members:
-
 Message
 -------
 
