@@ -36,10 +36,6 @@ So how do you get it? On PyPI!
 
     pip install emit
 
-Or, with the ``RQ`` or ``Celery`` bundles::
-
-    pip install emit[rq-routing] # or celery-routing
-
 Some Links:
 
 -  `Project Documentation <http://emit.readthedocs.org/en/latest/>`__
