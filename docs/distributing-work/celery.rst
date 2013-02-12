@@ -16,10 +16,13 @@ We'll be making, in essence, this graph:
 Installing
 ----------
 
-Emit can be installed pre-bundled with celery by installing with the following
-extra::
+If you have a very recent version of pip, Emit can be installed pre-bundled
+with celery by installing with the following extra::
 
     pip install emit[celery-routing]
+
+Otherwise, you'll need ``celery>=3.0.13``, as well as the libraries for
+whatever broker you'll be using.
 
 Setting up Celery
 -----------------
