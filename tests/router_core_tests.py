@@ -529,3 +529,36 @@ class RouterTests(TestCase):
         func(n=1)
 
         self.assertEqual(0, watcher.call_count)
+
+# tests for reported bugs
+class RouterRegressionTests(TestCase):
+    'tests to make sure reported bugs stay fixed'
+    def test_memory_tainting(self):
+        'nodes receive distinct copy of message so tainting is impossible'
+        router = Router()
+
+        # we'll be taking care of routing ourselves to get the order we need
+        router.disable_routing()
+
+        @router.node(('word',))
+        def emit(msg):
+            return 'untainted'
+
+        @router.node(('word',))
+        def taint(msg):
+            msg.word = 'tainted'
+            return msg.word
+
+        @router.node(('word',))
+        def depends(msg):
+            return msg.word
+
+        message = emit(x=1)
+        self.assertEqual({'word': 'untainted'}, message)
+
+        new_message = taint(message)
+        self.assertEqual({'word': 'tainted'}, new_message)
+        self.assertEqual({'word': 'untainted'}, message)
+
+        dependent_message = depends(message)
+        self.assertEqual({'word': 'untainted'}, dependent_message)
