@@ -58,7 +58,7 @@ class Router(object):
         self.logger.info('Calling entry point with %r', kwargs)
         self.route('__entry_point', kwargs)
 
-    def wrap_as_node(self, func):
+    def wrap_as_node(self, func, emit_immediately=False):
         'wrap a function as a node'
         name = self.get_name(func)
 
@@ -69,25 +69,26 @@ class Router(object):
             self.logger.info('calling "%s" with %r', name, message)
             result = func(message)
 
-            # functions can return multiple values ("emit" multiple times)
-            # by yielding instead of returning. Handle this case by making
-            # a list of the results and processing them all after the
-            # generator successfully exits. If we were to process them as
-            # they came out of the generator, we might get a partially
-            # processed input sent down the graph. This may be possible in
-            # the future via a flag.
             if isinstance(result, GeneratorType):
-                results = [
-                    self.wrap_result(name, item)
-                    for item in result
-                    if item is not NoResult
-                ]
-                self.logger.debug(
-                    '%s returned generator yielding %d items', func, len(results)
-                )
+                if not emit_immediately:
+                    results = [
+                        item for item in result
+                        if item is not NoResult
+                    ]
+                    self.logger.debug(
+                        '%s returned generator yielding %d items', func, len(results)
+                    )
+                else:
+                    results = result
+                    self.logger.debug('yielding live from %s', func)
 
-                [self.route(name, item) for item in results]
-                return tuple(results)
+                returned = []
+                for item in results:
+                    item = self.wrap_result(name, item)
+                    returned.append(item)
+                    self.route(name, item)
+
+                return tuple(returned)
 
             # the case of a direct return is simpler. wrap, route, and
             # return the value.
