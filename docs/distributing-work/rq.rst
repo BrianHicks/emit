@@ -14,10 +14,15 @@ we did in the Celery example.
 Installing
 ----------
 
-Emit can be installed pre-bundled with RQ by installing with the following
-extra::
+If you have a very recent version of pip, Emit can be installed pre-bundled
+with RQ by installing with the following extra::
 
     pip install emit[rq-routing]
+
+Otherwise, you'll need to install these dependencies::
+
+    rq>=0.3.4
+    redis>=2.7.2
 
 Setting up RQ
 -------------
