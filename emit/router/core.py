@@ -122,6 +122,9 @@ class Router(object):
                             that is, this function will be called when the
                             router is called directly.
         :type entry_point: :py:class:`bool`
+        :param emit_immediately: route generator's messages immediately,
+                                 instead of waiting for the entire list of values
+        :type emit_immediately: :py:class:`bool`
 
         In addition to all of the above, you can define a ``wrap_node``
         function on a subclass of Router, which will need to receive node and
