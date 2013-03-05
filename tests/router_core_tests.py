@@ -568,11 +568,11 @@ class RouterRegressionTests(TestCase):
             return msg.word
 
         message = emit(x=1)
-        self.assertEqual({'word': 'untainted'}, message)
+        self.assertEqual(({'word': 'untainted'},), message)
 
-        new_message = taint(message)
-        self.assertEqual({'word': 'tainted'}, new_message)
-        self.assertEqual({'word': 'untainted'}, message)
+        new_message = taint(message[0])
+        self.assertEqual(({'word': 'tainted'},), new_message)
+        self.assertEqual(({'word': 'untainted'},), message)
 
-        dependent_message = depends(message)
-        self.assertEqual({'word': 'untainted'}, dependent_message)
+        dependent_message = depends(message[0])
+        self.assertEqual(({'word': 'untainted'},), dependent_message)
