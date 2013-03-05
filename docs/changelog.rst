@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.5.0
+-----
+
+ - Nodes which return single values will now be wrapped in a tuple, for
+   consistency with generator nodes. Routing will proceed as before.
+
 0.4.0
 -----
 

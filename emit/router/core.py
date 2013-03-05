@@ -69,39 +69,31 @@ class Router(object):
             self.logger.info('calling "%s" with %r', name, message)
             result = func(message)
 
-            if isinstance(result, GeneratorType):
-                if not emit_immediately:
-                    results = [
-                        item for item in result
-                        if item is not NoResult
-                    ]
-                    self.logger.debug(
-                        '%s returned generator yielding %d items', func, len(results)
-                    )
-                else:
-                    results = result
+            # this branch needs to set a value to "values", no matter what.
+            if isinstance(result, GeneratorType):  # "yielde"d values
+                if emit_immediately:
                     self.logger.debug('yielding live from %s', func)
+                    values = result
+                else:
+                    values = tuple(result)
+                    self.logger.debug(
+                        '%s returned generator yielding %d items',
+                        func, len(values)
+                    )
+            else:  # single result - "return"ed value
+                values = [result]
 
-                returned = []
-                for item in results:
-                    item = self.wrap_result(name, item)
-                    returned.append(item)
-                    self.route(name, item)
+            return_values = []
+            for item in values:
+                # filter out NoResults
+                if item is NoResult:
+                    continue
 
-                return tuple(returned)
+                item = self.wrap_result(name, item)
+                return_values.append(item)
+                self.route(name, item)
 
-            # the case of a direct return is simpler. wrap, route, and
-            # return the value.
-            else:
-                if result is NoResult:
-                    return result
-
-                result = self.wrap_result(name, result)
-                self.logger.debug(
-                    '%s returned single value %s', func, result
-                )
-                self.route(name, result)
-                return result
+            return tuple(return_values)
 
         return wrapped
 

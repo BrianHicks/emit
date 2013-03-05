@@ -416,7 +416,7 @@ class RouterTests(TestCase):
             return msg.x + msg.y, msg.x, msg.y
 
         self.assertEqual(
-            {'sum': 3, 'x': 1, 'y': 2},
+            ({'sum': 3, 'x': 1, 'y': 2},),
             add(x=1, y=2)
         )
 
