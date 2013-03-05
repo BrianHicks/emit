@@ -188,6 +188,10 @@ class Router(object):
             # then it's a set of kwargs
             self.logger.debug('called with kwargs')
             result = kwargs
+        elif len(args) == 0 and kwargs == {}:
+            # no arguments or keyword arguments
+            self.logger.debug('called with blank')
+            result = {}
         else:
             # it's neither, and we don't handle that
             self.logger.error(

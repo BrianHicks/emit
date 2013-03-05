@@ -84,6 +84,13 @@ class GetMessageFromCallTests(TestCase):
     def setUp(self):
         self.router = Router()
 
+    def test_no_args(self):
+        'calls correctly with no args'
+        self.assertEqual(
+            Message(),
+            self.router.get_message_from_call()
+        )
+
     def test_from_args(self):
         'gets correct message from args'
         d = {'test': 1}
@@ -447,7 +454,7 @@ class RouterTests(TestCase):
         # return value is identical
         self.assertEqual(
             ({'x': 1}, {'x': 2}, {'x': 3},),
-            node(TODO=1),
+            node(),
         )
 
     def test_routing(self):
