@@ -6,6 +6,8 @@ Changelog
 
  - Nodes which return single values will now be wrapped in a tuple, for
    consistency with generator nodes. Routing will proceed as before.
+ - You can now pass "emit_immediately" into a node definition to immediately
+   route your message, without waiting for the rest of the generator to finish.
 
 0.4.0
 -----
