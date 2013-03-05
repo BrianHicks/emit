@@ -530,7 +530,7 @@ class RouterTests(TestCase):
 
         self.assertEqual(0, watcher.call_count)
 
-# tests for reported bugs
+
 class RouterRegressionTests(TestCase):
     'tests to make sure reported bugs stay fixed'
     def test_memory_tainting(self):
