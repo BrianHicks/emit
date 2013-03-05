@@ -98,7 +98,7 @@ class Router(object):
         return wrapped
 
     def node(self, fields, subscribe_to=None, entry_point=False, ignore=None,
-             **wrapper_options):
+             emit_immediately=False, **wrapper_options):
         '''\
         Decorate a function to make it a node.
 
@@ -135,7 +135,7 @@ class Router(object):
             'outer level function'
             # create a wrapper function
             self.logger.debug('wrapping %s', func)
-            wrapped = self.wrap_as_node(func)
+            wrapped = self.wrap_as_node(func, emit_immediately)
 
             if hasattr(self, 'wrap_node'):
                 self.logger.debug('wrapping node "%s" in custom wrapper', wrapped)
