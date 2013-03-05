@@ -58,7 +58,7 @@ class Router(object):
         self.logger.info('Calling entry point with %r', kwargs)
         self.route('__entry_point', kwargs)
 
-    def wrap_as_node(self, func):
+    def wrap_as_node(self, func, emit_immediately=False):
         'wrap a function as a node'
         name = self.get_name(func)
 
@@ -69,43 +69,36 @@ class Router(object):
             self.logger.info('calling "%s" with %r', name, message)
             result = func(message)
 
-            # functions can return multiple values ("emit" multiple times)
-            # by yielding instead of returning. Handle this case by making
-            # a list of the results and processing them all after the
-            # generator successfully exits. If we were to process them as
-            # they came out of the generator, we might get a partially
-            # processed input sent down the graph. This may be possible in
-            # the future via a flag.
-            if isinstance(result, GeneratorType):
-                results = [
-                    self.wrap_result(name, item)
-                    for item in result
-                    if item is not NoResult
-                ]
-                self.logger.debug(
-                    '%s returned generator yielding %d items', func, len(results)
-                )
+            # this branch needs to set a value to "values", no matter what.
+            if isinstance(result, GeneratorType):  # "yielde"d values
+                if emit_immediately:
+                    self.logger.debug('yielding live from %s', func)
+                    values = result
+                else:
+                    values = tuple(result)
+                    self.logger.debug(
+                        '%s returned generator yielding %d items',
+                        func, len(values)
+                    )
+            else:  # single result - "return"ed value
+                values = [result]
 
-                [self.route(name, item) for item in results]
-                return tuple(results)
+            return_values = []
+            for item in values:
+                # filter out NoResults
+                if item is NoResult:
+                    continue
 
-            # the case of a direct return is simpler. wrap, route, and
-            # return the value.
-            else:
-                if result is NoResult:
-                    return result
+                item = self.wrap_result(name, item)
+                return_values.append(item)
+                self.route(name, item)
 
-                result = self.wrap_result(name, result)
-                self.logger.debug(
-                    '%s returned single value %s', func, result
-                )
-                self.route(name, result)
-                return result
+            return tuple(return_values)
 
         return wrapped
 
     def node(self, fields, subscribe_to=None, entry_point=False, ignore=None,
-             **wrapper_options):
+             emit_immediately=False, **wrapper_options):
         '''\
         Decorate a function to make it a node.
 
@@ -129,6 +122,9 @@ class Router(object):
                             that is, this function will be called when the
                             router is called directly.
         :type entry_point: :py:class:`bool`
+        :param emit_immediately: route generator's messages immediately,
+                                 instead of waiting for the entire list of values
+        :type emit_immediately: :py:class:`bool`
 
         In addition to all of the above, you can define a ``wrap_node``
         function on a subclass of Router, which will need to receive node and
@@ -142,7 +138,7 @@ class Router(object):
             'outer level function'
             # create a wrapper function
             self.logger.debug('wrapping %s', func)
-            wrapped = self.wrap_as_node(func)
+            wrapped = self.wrap_as_node(func, emit_immediately)
 
             if hasattr(self, 'wrap_node'):
                 self.logger.debug('wrapping node "%s" in custom wrapper', wrapped)
