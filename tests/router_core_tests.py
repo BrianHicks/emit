@@ -436,6 +436,20 @@ class RouterTests(TestCase):
             suffixes(pre='stuff', sufs=['y', 'ier', 'iest'])
         )
 
+    def test_live_mode(self):
+        'adding emit_immediately emits immediately'
+        @self.router.node(['x'], emit_immediately=True)
+        def node(msg):
+            yield 1
+            yield 2
+            yield 3
+
+        # return value is identical
+        self.assertEqual(
+            ({'x': 1}, {'x': 2}, {'x': 3},),
+            node(TODO=1),
+        )
+
     def test_routing(self):
         'calling a function will route to subscribed functions'
         n = 5
